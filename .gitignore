@@ -1,0 +1,42 @@
+# Node dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Environment and secrets
+.env
+.env.local
+.env.*.local
+*.pem
+
+# Production builds
+dist/
+dist-ssr/
+build/
+*.local
+
+# System and editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Testing and coverage
+coverage/
+.nyc_output/
+
+# Puppeteer downloaded binaries / cache
+.cache/
+puppeteer/
+
+# Logs
+logs/
+*.log

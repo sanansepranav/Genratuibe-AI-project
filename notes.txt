@@ -1,0 +1,20 @@
+import { application } from "express"
+import { STATES } from "mongoose"
+import { unstable_setDevServerHooks } from "react-router"
+
+4 layer architecture
+
+UI 
+=> vompontes
+=> pages
+
+HOOK (for manage states api layers)
+=>hooks
+
+STATES (data store)
+=> Auth.context.jsx
+=> ai.context.jsx
+
+api (communivation with backend)
+=> service
+    => auth.api,js

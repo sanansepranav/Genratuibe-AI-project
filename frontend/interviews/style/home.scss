@@ -1,0 +1,431 @@
+$primary-color: #2563eb;
+$primary-dark: #1d4ed8;
+$primary-light: #3b82f6;
+$border-color: #e2e8f0;
+$background-color: #f8fafc;
+$text-color: #0f172a;
+$text-muted: #64748b;
+$shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
+$shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
+$shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+
+.home-container {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: #f8fafc;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: $text-color;
+
+    .top-nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 2.5rem;
+        background: #ffffff;
+        border-bottom: 1px solid $border-color;
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.15rem;
+            color: $primary-dark;
+
+            .logo-icon {
+                font-size: 1.35rem;
+            }
+        }
+
+        .user-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 0.9rem;
+
+            .user-greeting {
+                color: $text-muted;
+                strong {
+                    color: $text-color;
+                }
+            }
+
+            .logout-btn {
+                padding: 0.45rem 0.9rem;
+                background: #f1f5f9;
+                border: 1px solid $border-color;
+                border-radius: 6px;
+                cursor: pointer;
+                font-size: 0.85rem;
+                color: #ef4444;
+                font-weight: 500;
+                transition: all 0.2s;
+
+                &:hover {
+                    background: #fee2e2;
+                    border-color: #fca5a5;
+                }
+            }
+        }
+    }
+
+    .page-header {
+        text-align: center;
+        padding: 2.5rem 1.5rem 1.5rem;
+        max-width: 900px;
+        margin: 0 auto;
+
+        h1 {
+            font-size: 2.25rem;
+            font-weight: 800;
+            margin-bottom: 0.75rem;
+            letter-spacing: -0.5px;
+
+            .highlight {
+                color: $primary-color;
+            }
+        }
+
+        p {
+            font-size: 1.05rem;
+            color: $text-muted;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+
+        .action-banner {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+
+            .preset-label {
+                font-size: 0.9rem;
+                font-weight: 700;
+                color: $text-muted;
+                margin-right: 0.25rem;
+            }
+
+            .sample-btn {
+                padding: 0.55rem 1rem;
+                background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+                border: 1px solid #bfdbfe;
+                color: $primary-dark;
+                font-weight: 600;
+                font-size: 0.88rem;
+                border-radius: 8px;
+                cursor: pointer;
+                box-shadow: $shadow;
+                transition: all 0.2s;
+
+                &:hover {
+                    background: #bfdbfe;
+                    transform: translateY(-1px);
+                }
+
+                &.frontend-preset {
+                    background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%);
+                    border-color: #e9d5ff;
+                    color: #6b21a8;
+
+                    &:hover {
+                        background: #e9d5ff;
+                    }
+                }
+
+                &.backend-preset {
+                    background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+                    border-color: #bbf7d0;
+                    color: #15803d;
+
+                    &:hover {
+                        background: #bbf7d0;
+                    }
+                }
+            }
+
+            .clear-btn {
+                padding: 0.55rem 0.9rem;
+                background: #ffffff;
+                border: 1px solid $border-color;
+                color: $text-muted;
+                font-size: 0.88rem;
+                border-radius: 8px;
+                cursor: pointer;
+                transition: all 0.2s;
+
+                &:hover {
+                    background: #f1f5f9;
+                    color: #ef4444;
+                }
+            }
+        }
+
+    }
+
+    .error-banner {
+        max-width: 1200px;
+        margin: 0 auto 1.5rem;
+        padding: 0.75rem 1.25rem;
+        background: #fee2e2;
+        border: 1px solid #fca5a5;
+        border-radius: 8px;
+        color: #b91c1c;
+        font-weight: 500;
+        text-align: center;
+    }
+
+    .home {
+        display: flex;
+        gap: 2rem;
+        max-width: 1200px;
+        width: 100%;
+        margin: 0 auto;
+        padding: 0 1.5rem 3rem;
+        align-items: flex-start;
+
+        .left, .right {
+            flex: 1;
+            background: #ffffff;
+            padding: 1.75rem;
+            border-radius: 12px;
+            box-shadow: $shadow-md;
+            border: 1px solid $border-color;
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        .field-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.4rem;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+
+            label {
+                font-weight: 700;
+                font-size: 0.95rem;
+                color: $text-color;
+            }
+
+            .field-hint {
+                font-size: 0.8rem;
+                color: $text-muted;
+            }
+        }
+
+        textarea {
+            width: 100%;
+            padding: 0.85rem 1rem;
+            border: 1.5px solid $border-color;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.9rem;
+            color: $text-color;
+            background: #f8fafc;
+            resize: vertical;
+            transition: all 0.2s;
+            line-height: 1.5;
+
+            &:focus {
+                outline: none;
+                border-color: $primary-color;
+                background: #ffffff;
+                box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+            }
+        }
+
+        .resume-section {
+            display: flex;
+            flex-direction: column;
+
+            .mode-toggle {
+                display: flex;
+                background: #f1f5f9;
+                padding: 3px;
+                border-radius: 6px;
+                gap: 4px;
+
+                button {
+                    border: none;
+                    background: transparent;
+                    padding: 0.35rem 0.65rem;
+                    font-size: 0.8rem;
+                    font-weight: 600;
+                    color: $text-muted;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    transition: all 0.15s;
+
+                    &.active {
+                        background: #ffffff;
+                        color: $primary-dark;
+                        box-shadow: $shadow;
+                    }
+                }
+            }
+
+            .file-upload-box {
+                border: 2px dashed $border-color;
+                border-radius: 8px;
+                padding: 1.75rem;
+                text-align: center;
+                background: #f8fafc;
+                transition: all 0.2s;
+
+                &:hover {
+                    border-color: $primary-color;
+                    background: #eff6ff;
+                }
+
+                .file-label {
+                    cursor: pointer;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    gap: 0.4rem;
+
+                    .upload-icon {
+                        font-size: 2rem;
+                    }
+
+                    span {
+                        font-weight: 600;
+                        color: $text-color;
+                        font-size: 0.95rem;
+                    }
+
+                    small {
+                        color: $text-muted;
+                    }
+                }
+            }
+        }
+
+        .generate-btn {
+            padding: 1rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 700;
+            color: #ffffff;
+            background: linear-gradient(135deg, $primary-color 0%, $primary-dark 100%);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: $shadow-md;
+            transition: all 0.2s;
+            margin-top: 0.5rem;
+
+            &:hover:not(:disabled) {
+                transform: translateY(-1px);
+                box-shadow: $shadow-lg;
+            }
+
+            &:disabled {
+                opacity: 0.7;
+                cursor: not-allowed;
+            }
+        }
+    }
+
+    .recent-reports {
+        max-width: 1200px;
+        width: 100%;
+        margin: 0 auto 3rem;
+        padding: 0 1.5rem;
+
+        h2 {
+            font-size: 1.35rem;
+            font-weight: 700;
+            margin-bottom: 1.25rem;
+            color: $text-color;
+        }
+
+        .report-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.25rem;
+            list-style: none;
+            padding: 0;
+
+            .report-item {
+                background: #ffffff;
+                padding: 1.25rem;
+                border-radius: 10px;
+                border: 1px solid $border-color;
+                box-shadow: $shadow;
+                cursor: pointer;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                transition: all 0.2s;
+
+                &:hover {
+                    border-color: $primary-light;
+                    transform: translateY(-2px);
+                    box-shadow: $shadow-md;
+                }
+
+                .report-info {
+                    flex: 1;
+                    padding-right: 1rem;
+
+                    h3 {
+                        font-size: 1rem;
+                        font-weight: 700;
+                        margin-bottom: 0.35rem;
+                        color: $text-color;
+                    }
+
+                    .report-snippet {
+                        font-size: 0.85rem;
+                        color: $text-muted;
+                        margin-bottom: 0.5rem;
+                    }
+
+                    .report-meta {
+                        font-size: 0.75rem;
+                        color: #94a3b8;
+                    }
+                }
+
+                .report-score-badge {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    background: #eff6ff;
+                    border: 1px solid #bfdbfe;
+                    border-radius: 8px;
+                    padding: 0.5rem 0.75rem;
+                    min-width: 60px;
+
+                    .score-val {
+                        font-size: 1.15rem;
+                        font-weight: 800;
+                        color: $primary-dark;
+                    }
+
+                    .score-lbl {
+                        font-size: 0.7rem;
+                        font-weight: 600;
+                        color: $primary-light;
+                        text-transform: uppercase;
+                    }
+                }
+            }
+        }
+    }
+
+    .page-footer {
+        margin-top: auto;
+        padding: 2rem;
+        text-align: center;
+        border-top: 1px solid $border-color;
+        background: #ffffff;
+        color: $text-muted;
+        font-size: 0.85rem;
+    }
+}
