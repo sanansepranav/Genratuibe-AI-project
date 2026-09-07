@@ -7,6 +7,7 @@
     "dev": "npx nodemon server.js",
     "start": "node server.js",
     "build": "npm --prefix ./frontend/interview run build",
+    "vercel-build": "npm --prefix ./frontend/interview run build",
     "build:frontend": "npm --prefix ./frontend/interview run build"
   },
   "keywords": [],
@@ -32,6 +33,7 @@
     "zod-to-json-schema": "^3.25.2"
   },
   "devDependencies": {
+    "@vitejs/plugin-react": "^6.1.1",
     "nodemon": "^3.1.14",
     "vite": "^8.2.2"
   }

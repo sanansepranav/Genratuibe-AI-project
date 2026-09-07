@@ -47,14 +47,14 @@ Responsibilities:
 - Troubleshoot and debug applications
 - Work with product managers to define requirements`;
 
-const SAMPLE_FRONTEND_RESUME = `Aditi Sharma
+const SAMPLE_FRONTEND_RESUME = `pratham Sharma
 Senior Frontend Engineer | React Specialist
 
-Email: aditi.sharma@example.com
+Email: pratham.sharma@example.com
 Phone: +91 9811223344
 Location: Bengaluru, India
-LinkedIn: linkedin.com/in/aditi-sharma-ui
-GitHub: github.com/aditi-sharma
+LinkedIn: linkedin.com/in/pratham-sharma-ui
+GitHub: github.com/pratham-sharma
 
 PROFESSIONAL SUMMARY
 Creative Frontend Engineer with 4 years of expertise in architecting high-performance web applications using React, TypeScript, Redux, and modern CSS/SCSS. Passionate about pixel-perfect UI/UX, responsive layouts, and web accessibility.
@@ -75,14 +75,14 @@ Requirements:
 - Knowledge of unit testing with Jest / React Testing Library
 - Strong collaboration with UX/UI designers`;
 
-const SAMPLE_BACKEND_RESUME = `Rahul Verma
+const SAMPLE_BACKEND_RESUME = `Suyesh Date
 Backend Engineer & Cloud Systems Developer
 
-Email: rahul.verma@example.com
+Email: suyesh.date@example.com
 Phone: +91 9765432109
 Location: Hyderabad, India
-LinkedIn: linkedin.com/in/rahul-verma-backend
-GitHub: github.com/rahul-verma-dev
+LinkedIn: linkedin.com/in/suyesh-date-backend
+GitHub: github.com/suyesh-date-dev
 
 PROFESSIONAL SUMMARY
 Backend Engineer with 3.5 years of experience building secure, high-throughput microservices, REST and GraphQL APIs, and scalable MongoDB and PostgreSQL databases. Expertise in Node.js, Express, Docker, and AWS.
@@ -259,10 +259,10 @@ const Home = () => {
                         ✨ Full Stack (Pranav)
                     </button>
                     <button type="button" className="sample-btn frontend-preset" onClick={handleLoadFrontendSample}>
-                        🎨 Frontend React (Aditi)
+                        🎨 Frontend React (Pratham)
                     </button>
                     <button type="button" className="sample-btn backend-preset" onClick={handleLoadBackendSample}>
-                        ⚙️ Backend Cloud (Rahul)
+                        ⚙️ Backend Cloud (Suyesh)
                     </button>
                     <button type="button" className="clear-btn" onClick={handleClear}>
                         ✕ Clear All

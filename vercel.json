@@ -1,0 +1,16 @@
+{
+  "version": 2,
+  "buildCommand": "npm --prefix ./frontend/interview run build",
+  "outputDirectory": "frontend/interview/dist",
+  "framework": "vite",
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/index.js"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
