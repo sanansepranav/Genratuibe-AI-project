@@ -1,14 +1,14 @@
 {
   "name": "gen-ai",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "npx nodemon server.js",
     "start": "node server.js",
-    "build": "npm --prefix ./frontend/interview run build",
-    "vercel-build": "npm --prefix ./frontend/interview run build",
-    "build:frontend": "npm --prefix ./frontend/interview run build"
+    "build": "npm --prefix ./frontend/interview install --include=dev && npm --prefix ./frontend/interview run build",
+    "vercel-build": "npm --prefix ./frontend/interview install --include=dev && npm --prefix ./frontend/interview run build",
+    "build:frontend": "npm --prefix ./frontend/interview install --include=dev && npm --prefix ./frontend/interview run build"
   },
   "keywords": [],
   "author": "",
