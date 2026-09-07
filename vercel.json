@@ -19,8 +19,11 @@
       "dest": "/api/index.js"
     },
     {
+      "handle": "filesystem"
+    },
+    {
       "src": "/(.*)",
-      "dest": "/frontend/interview/dist/$1"
+      "dest": "/index.html"
     }
   ]
 }
