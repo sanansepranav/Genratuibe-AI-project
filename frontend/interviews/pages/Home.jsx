@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { generateReport, getUserReports } from "../services/interview.api";
 import { useAuth } from "@auth/hooks/useAuth";
 import "../style/home.scss";
@@ -239,6 +239,24 @@ const Home = () => {
                         <span className="user-greeting">
                             Welcome, <strong>{user.username || user.email}</strong>
                         </span>
+                    )}
+                    {(user?.role === "admin" || user?.username === "admin" || user?.email === "admin@interviewai.com") && (
+                        <Link to="/admin" style={{
+                            background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
+                            color: "#fff",
+                            textDecoration: "none",
+                            padding: "6px 14px",
+                            borderRadius: "8px",
+                            fontSize: "0.82rem",
+                            fontWeight: "700",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "6px",
+                            boxShadow: "0 2px 8px rgba(99, 102, 241, 0.4)",
+                            transition: "all 0.2s ease"
+                        }}>
+                            <span>🛡️ Admin Panel</span>
+                        </Link>
                     )}
                     <button className="logout-btn" onClick={handleLogout}>
                         Logout

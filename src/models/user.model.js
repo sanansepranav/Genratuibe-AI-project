@@ -42,12 +42,54 @@ module.exports = {
             async select() {
                 const { data, error } = await getSupabaseClient()
                     .from("users")
-                    .select("id, username, email")
+                    .select("id, username, email, role, created_at")
                     .eq("id", id)
                     .maybeSingle();
                 if (error) throw error;
                 return normalizeUser(data);
             },
         };
+    },
+
+    async find(options = {}) {
+        const client = getSupabaseClient();
+        let query = client.from("users").select("id, username, email, role, created_at").order("created_at", { ascending: false });
+        if (options.limit) {
+            query = query.limit(options.limit);
+        }
+        const { data, error } = await query;
+        if (error) throw error;
+        return (data || []).map(normalizeUser);
+    },
+
+    async count() {
+        const client = getSupabaseClient();
+        const { count, error } = await client
+            .from("users")
+            .select("id", { count: "exact", head: true });
+        if (error) throw error;
+        return count || 0;
+    },
+
+    async update(id, updates) {
+        const client = getSupabaseClient();
+        const { data, error } = await client
+            .from("users")
+            .update(updates)
+            .eq("id", id)
+            .select("id, username, email, role, created_at")
+            .single();
+        if (error) throw error;
+        return normalizeUser(data);
+    },
+
+    async delete(id) {
+        const client = getSupabaseClient();
+        const { error } = await client
+            .from("users")
+            .delete()
+            .eq("id", id);
+        if (error) throw error;
+        return true;
     },
 };

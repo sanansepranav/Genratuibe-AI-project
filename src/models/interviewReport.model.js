@@ -102,4 +102,35 @@ module.exports = {
         if (error) throw error;
         return normalizeReport(data);
     },
+
+    async findAll(options = {}) {
+        const client = getSupabaseClient();
+        let query = client
+            .from("interview_reports")
+            .select("id, user_id, title, match_score, job_description, created_at, updated_at")
+            .order("created_at", { ascending: false });
+        if (options.limit) query = query.limit(options.limit);
+        const { data, error } = await query;
+        if (error) throw error;
+        return (data || []).map(normalizeReport);
+    },
+
+    async count() {
+        const client = getSupabaseClient();
+        const { count, error } = await client
+            .from("interview_reports")
+            .select("id", { count: "exact", head: true });
+        if (error) throw error;
+        return count || 0;
+    },
+
+    async delete(id) {
+        const client = getSupabaseClient();
+        const { error } = await client
+            .from("interview_reports")
+            .delete()
+            .eq("id", id);
+        if (error) throw error;
+        return true;
+    },
 };

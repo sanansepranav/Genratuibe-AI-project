@@ -22,6 +22,7 @@ app.use(cors({
 // require all routes here
 const authRoutes = require("./routes/auth.routes");
 const interviewRoutes = require("./routes/interview.routes");
+const adminRoutes = require("../routes/admin.routes");
 
 app.get("/", (req, res) => {
     res.send("Interview AI API is running");
@@ -54,6 +55,7 @@ app.get("/api/health", (req, res) => {
 // all routes
 app.use("/api/auth", authRoutes);
 app.use("/api/interview", interviewRoutes);
+app.use("/api/admin", adminRoutes);
 
 // Global JSON error handling middleware
 app.use((err, req, res, next) => {

@@ -14,8 +14,14 @@ async function authMiddleware(req, res, next) {
     }
 
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.user = { id: decoded.id || decoded.Id, username: decoded.username };
+        const jwtSecret = process.env.JWT_SECRET || "default_jwt_secret_dev_key_fallback";
+        const decoded = jwt.verify(token, jwtSecret);
+        req.user = {
+            id: decoded.id || decoded.Id,
+            username: decoded.username,
+            email: decoded.email,
+            role: decoded.role || (decoded.username === "admin" ? "admin" : "user")
+        };
         return next();
     } catch (error) {
         return res.status(401).json({ message: "Invalid or expired token." });

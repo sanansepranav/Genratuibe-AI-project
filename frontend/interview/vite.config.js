@@ -12,6 +12,7 @@ export default defineConfig({
     alias: {
       '@auth': path.resolve(__dirname, '../auth'),
       '@interviews': path.resolve(__dirname, '../interviews'),
+      '@admin': path.resolve(__dirname, '../admin'),
       'react-router-dom': path.resolve(__dirname, 'node_modules/react-router-dom'),
       'react': path.resolve(__dirname, 'node_modules/react'),
       'react-dom': path.resolve(__dirname, 'node_modules/react-dom'),

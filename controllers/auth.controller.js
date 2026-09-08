@@ -51,9 +51,10 @@ async function registerUserController(req, res) {
             password: hash,
         });
 
+        const userRole = user.role || (user.username === "admin" || user.email === "admin@interviewai.com" ? "admin" : "user");
         const jwtSecret = process.env.JWT_SECRET || "default_jwt_secret_dev_key_fallback";
         const token = jwt.sign(
-            { id: user._id, username: user.username },
+            { id: user._id, username: user.username, email: user.email, role: userRole },
             jwtSecret,
             { expiresIn: "1d" }
         );
@@ -66,6 +67,7 @@ async function registerUserController(req, res) {
                 id: user._id,
                 username: user.username,
                 email: user.email,
+                role: userRole,
             }
         });
     } catch (err) {
@@ -112,9 +114,10 @@ async function loginUserController(req, res) {
             });
         }
 
+        const userRole = user.role || (user.username === "admin" || user.email === "admin@interviewai.com" ? "admin" : "user");
         const jwtSecret = process.env.JWT_SECRET || "default_jwt_secret_dev_key_fallback";
         const token = jwt.sign(
-            { id: user._id, username: user.username },
+            { id: user._id, username: user.username, email: user.email, role: userRole },
             jwtSecret,
             { expiresIn: "1d" }
         );
@@ -126,6 +129,7 @@ async function loginUserController(req, res) {
                 id: user._id,
                 username: user.username,
                 email: user.email,
+                role: userRole,
             }
         });
     } catch (err) {
@@ -144,12 +148,14 @@ async function getMeController(req, res) {
             return res.status(404).json({ message: "User not found" });
         }
 
+        const userRole = user.role || (user.username === "admin" || user.email === "admin@interviewai.com" ? "admin" : "user");
         return res.status(200).json({
             message: "current user fetched successfully",
             user: {
                 id: user._id,
                 username: user.username,
                 email: user.email,
+                role: userRole,
             }
         });
     } catch (err) {
