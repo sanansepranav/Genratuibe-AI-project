@@ -17,7 +17,11 @@ const Login = () => {
     setErrorMessage("");
     const result = await handleLogin({ email, password });
     if (result?.success) {
-      navigate("/");
+      if (result.user?.role === "admin" || result.user?.username === "admin" || email === "admin") {
+        navigate("/admin");
+      } else {
+        navigate("/");
+      }
     } else {
       setErrorMessage(result?.error || "Login failed");
     }
@@ -44,13 +48,14 @@ const Login = () => {
         )}
         <form onSubmit={handleSubmit}>
           <div className="input-group">
-            <label htmlFor="email">Email</label>
+            <label htmlFor="email">Email or Username</label>
             <input 
-            onChange={(e)=>{setEmail(e.target.value)}}
-              type="email" 
+              onChange={(e) => setEmail(e.target.value)}
+              type="text" 
               id="email" 
               name="email" 
-              placeholder="Enter your email"
+              placeholder="Enter your email or username"
+              required
             />
           </div>
 

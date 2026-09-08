@@ -88,21 +88,25 @@ async function registerUserController(req, res) {
 
 async function loginUserController(req, res) {
     try {
-        const { email, password } = req.body;
+        const identifier = (req.body.email || req.body.username || "").trim();
+        const password = req.body.password;
 
-        if (!email || !password) {
+        if (!identifier || !password) {
             return res.status(400).json({
-                message: "Please provide email and password"
+                message: "Please provide email or username and password"
             });
         }
 
-        const user = await userModel.findOne({
-            email
-        });
+        const isEmail = identifier.includes("@");
+        const user = await userModel.findOne(
+            isEmail
+                ? { email: identifier.toLowerCase() }
+                : { $or: [{ username: identifier }, { email: identifier }] }
+        );
 
         if (!user) {
             return res.status(400).json({
-                message: "Invalid email or password"
+                message: "Invalid credentials. Please check your username/email and password."
             });
         }
 
@@ -110,7 +114,7 @@ async function loginUserController(req, res) {
 
         if (!isPasswordCorrect) {
             return res.status(400).json({
-                message: "Invalid email or password"
+                message: "Invalid credentials. Please check your username/email and password."
             });
         }
 

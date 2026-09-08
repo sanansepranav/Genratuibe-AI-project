@@ -1,23 +1,36 @@
 const { getSupabaseClient } = require("../config/database");
 
+const inMemoryBlacklist = new Set();
+
 module.exports = {
     async findOne({ token }) {
-        const { data, error } = await getSupabaseClient()
-            .from("blacklist_tokens")
-            .select("id")
-            .eq("token", token)
-            .maybeSingle();
-        if (error) throw error;
-        return data;
+        try {
+            const { data, error } = await getSupabaseClient()
+                .from("blacklist_tokens")
+                .select("id")
+                .eq("token", token)
+                .maybeSingle();
+            if (error) {
+                return inMemoryBlacklist.has(token) ? { id: 1, token } : null;
+            }
+            return data;
+        } catch {
+            return inMemoryBlacklist.has(token) ? { id: 1, token } : null;
+        }
     },
 
     async create({ token }) {
-        const { data, error } = await getSupabaseClient()
-            .from("blacklist_tokens")
-            .insert({ token })
-            .select()
-            .single();
-        if (error) throw error;
-        return data;
+        inMemoryBlacklist.add(token);
+        try {
+            const { data, error } = await getSupabaseClient()
+                .from("blacklist_tokens")
+                .insert({ token })
+                .select()
+                .single();
+            if (error) return { id: Date.now(), token };
+            return data;
+        } catch {
+            return { id: Date.now(), token };
+        }
     },
 };
