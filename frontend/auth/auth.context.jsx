@@ -13,7 +13,7 @@ export const AuthProvider = ({ children }) => {
                 const response = await getMe();
                 setUser(response.user);
             } catch (error) {
-                console.log("User not authenticated");
+                setUser(null);
             } finally { 
                 setLoading(false);
             }

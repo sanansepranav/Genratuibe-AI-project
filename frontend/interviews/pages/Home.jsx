@@ -402,7 +402,7 @@ const Home = () => {
             )}
 
             <footer className="page-footer">
-                <p>© 2026 Interview AI Studio - Tailored Resumes & Real-time Preparation Plans</p>
+                <p>Terms & Conditions</p>
             </footer>
         </div>
     );

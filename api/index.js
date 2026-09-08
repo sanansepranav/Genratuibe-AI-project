@@ -9,7 +9,7 @@ module.exports = async (req, res) => {
             await connectDB();
             isConnected = true;
         } catch (err) {
-            console.warn("MongoDB connection warning in Vercel serverless function:", err.message);
+            console.warn("Supabase connection warning in Vercel serverless function:", err.message);
         }
     }
     return app(req, res);

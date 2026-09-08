@@ -16,7 +16,9 @@ async function startServer() {
     try {
         await connectDB();
     } catch (err) {
-        console.warn("Starting server without a working MongoDB connection.");
+        console.error("Cannot start server without a working Supabase connection:", err.message);
+        process.exitCode = 1;
+        return;
     }
 
     const server = app.listen(PORT, () => {

@@ -1,145 +1,105 @@
-const mongoose = require("mongoose");
+const { getSupabaseClient } = require("../config/database");
 
-/**
- * - job desciption schema
- * - resume text : STRING
- * - self description : string
- * 
- * -matchScore : {
- *      mumber }
- * 
- * -technical skills :[{
- *        quation : "",
- *        intenshtion : ""
- *        answer : ""
- *     }]
- * -behaviour skills
- * skill gap : [{
- *     skill : "",
- *     sevritu: {
- *              type : string,
- *              enum : ["low", "medium", "high"]}}]
- * prepration plan :[{
- *   day : Number
- *   focus : String,
- *   tasks : [string]}]
- * 
- */
+function normalizeReport(report) {
+    if (!report) return null;
 
-const technicalQuestionSchema = new mongoose.Schema({
-    question : {
-        type : String,
-        required : [true, "Question is required"]
-    },
-    intention : {
-        type : String,
-        required : [true, "Intention is required"]
-    },
-    answer : {
-        type: String,
-        required : [ true, "Answer is required"]
-    }
-}, {
-    _id: false
-});
+    return {
+        ...report,
+        _id: report.id,
+        user: report.user_id,
+        jobDescription: report.job_description,
+        selfDescription: report.self_description,
+        matchScore: report.match_score,
+        technicalQuestions: report.technical_questions,
+        behaviorQuestions: report.behavior_questions,
+        skillGaps: report.skill_gaps,
+        preparationPlan: report.preparation_plan,
+        resumeHtml: report.resume_html,
+        resumeData: report.resume_data,
+        createdAt: report.created_at,
+        updatedAt: report.updated_at,
+    };
+}
 
-const brhaviourQuestionSchema = new mongoose.Schema({
-    question : {
-        type : String,
-        required : [true, "Question is required"]
-    },
-    intention : {
-        type  : String,
-        required : [true, "Intention is required"]
-    },
-    answer : {
-        type : String,
-        required : [true, "Answer is required"]
-    }
-}, {
-    _id: false
-})
-///
-const skillGapSchema = new mongoose.Schema({
-    skill: {
-        type: String,
-        required: [true, "Skill is required"],
-    },
-    severity: {
-        type: String,
-        enum: ["low", "medium", "high"],
-        required: [true, "Severity is required"],
-    },
-}, {
-    _id: false
-});
+function selectFields(fields) {
+    if (!fields) return "*";
 
-const preparationPlanSchema = new mongoose.Schema(
-    {
-        day: {
-            type: Number,
-            required: [true, "Day is required"],
-        },
-        focus: {
-            type: String,
-            required: [true, "Focus is required"],
-        },
-        tasks: {
-            type: [String],
-            required: [true, "Tasks are required"],
-        },
+    const fieldMap = {
+        title: "title",
+        jobDescription: "job_description",
+        user: "user_id",
+        matchScore: "match_score",
+        createdAt: "created_at",
+    };
+
+    return fields.split(" ").map(field => fieldMap[field] || field).join(",");
+}
+
+function toDatabaseFields(report) {
+    const fieldMap = {
+        jobDescription: "job_description",
+        selfDescription: "self_description",
+        matchScore: "match_score",
+        technicalQuestions: "technical_questions",
+        behaviorQuestions: "behavior_questions",
+        skillGaps: "skill_gaps",
+        preparationPlan: "preparation_plan",
+        resumeHtml: "resume_html",
+        resumeData: "resume_data",
+    };
+
+    return Object.fromEntries(Object.entries(report).map(([key, value]) => [fieldMap[key] || key, value]));
+}
+
+module.exports = {
+    async create(report) {
+        const { data, error } = await getSupabaseClient()
+            .from("interview_reports")
+            .insert(toDatabaseFields(report))
+            .select()
+            .single();
+        if (error) throw error;
+        return normalizeReport(data);
     },
-    { _id: false }
-);
 
-const interviewReportSchema = new mongoose.Schema(
-    {
-        jobDescription: {
-            type: String,
-            required: true,
-        },
-        resume: {
-            type: String,
-            required: false,
-            default: "",
-        },
-        selfDescription: {
-            type: String,
-            required: false,
-        },
-        matchScore: {
-            type: Number,
-            min: 0,
-            max: 100,
-            required: false,
-        },
-        technicalQuestions: [technicalQuestionSchema],
-        behaviorQuestions: [brhaviourQuestionSchema],
-        skillGaps: [skillGapSchema],
-        preparationPlan: [preparationPlanSchema],
-        title: {
-            type: String,
-            default: "Interview Analysis & Resume",
-        },
-        resumeHtml: {
-            type: String,
-            default: "",
-        },
-        resumeData: {
-            type: mongoose.Schema.Types.Mixed,
-            default: {},
-        },
-        user: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "User",
-            required: false,
-        },
+    async findById(id) {
+        const { data, error } = await getSupabaseClient()
+            .from("interview_reports")
+            .select("*")
+            .eq("id", id)
+            .maybeSingle();
+        if (error) throw error;
+        return normalizeReport(data);
     },
-    {
-        timestamps: true,
-    }
-);
 
-const InterviewReport = mongoose.model("InterviewReport", interviewReportSchema);
+    find(query) {
+        const builder = {
+            sort() {
+                return builder;
+            },
+            select(fields) {
+                return (async () => {
+                    const { data, error } = await getSupabaseClient()
+                        .from("interview_reports")
+                        .select(selectFields(fields))
+                        .eq("user_id", query.user)
+                        .order("created_at", { ascending: false });
+                    if (error) throw error;
+                    return data.map(normalizeReport);
+                })();
+            },
+        };
+        return builder;
+    },
 
-module.exports = InterviewReport;
+    async findByIdAndUpdate(id, updates) {
+        const { data, error } = await getSupabaseClient()
+            .from("interview_reports")
+            .update(toDatabaseFields(updates))
+            .eq("id", id)
+            .select()
+            .maybeSingle();
+        if (error) throw error;
+        return normalizeReport(data);
+    },
+};

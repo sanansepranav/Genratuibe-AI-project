@@ -1,24 +1,47 @@
-const mongoose = require("mongoose");
+const { getSupabaseClient } = require("../config/database");
 
-const userSchema = new mongoose.Schema ({
-    username: {
-        type:String,
-        unique: [true, "username already exists"],
-        required: true,
+function normalizeUser(user) {
+    return user ? { ...user, _id: user.id } : null;
+}
+
+module.exports = {
+    async findOne(query) {
+        const client = getSupabaseClient();
+        let request = client.from("users").select("*").limit(1);
+
+        if (query.$or) {
+            const [{ username }, { email }] = query.$or;
+            request = request.or(`username.eq.${username},email.eq.${email}`);
+        } else if (query.email) {
+            request = request.eq("email", query.email);
+        }
+
+        const { data, error } = await request.maybeSingle();
+        if (error) throw error;
+        return normalizeUser(data);
     },
 
-    email : {
-        type: String,
-        unique: [true, "account is already exists with address"],
-        required: true,
+    async create(user) {
+        const { data, error } = await getSupabaseClient()
+            .from("users")
+            .insert(user)
+            .select()
+            .single();
+        if (error) throw error;
+        return normalizeUser(data);
     },
 
-    password: {
-        type: String,
-        required: true,
-    }
-});
-
-const User = mongoose.model("User", userSchema);
-
-module.exports = User;
+    findById(id) {
+        return {
+            async select() {
+                const { data, error } = await getSupabaseClient()
+                    .from("users")
+                    .select("id, username, email")
+                    .eq("id", id)
+                    .maybeSingle();
+                if (error) throw error;
+                return normalizeUser(data);
+            },
+        };
+    },
+};

@@ -1,15 +1,18 @@
 const express = require("express");
 const app = express();
 const cors = require("cors");
-const mongoose = require("mongoose");
 
 app.use(express.json());
 app.use(require('cookie-parser')());
 
-const allowedOrigins = ["http://localhost:5173", "http://localhost:5174"];
+const allowedOrigins = [
+    "http://localhost:5173",
+    "http://localhost:5174",
+    process.env.FRONTEND_URL,
+].filter(Boolean);
 app.use(cors({
     origin: (origin, callback) => {
-        if (!origin || allowedOrigins.includes(origin)) {
+        if (!origin || allowedOrigins.includes(origin) || origin.endsWith(".vercel.app")) {
             return callback(null, true);
         }
         return callback(new Error("CORS policy does not allow access from this origin."));

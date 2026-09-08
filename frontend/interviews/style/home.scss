@@ -429,3 +429,108 @@ $shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.
         font-size: 0.85rem;
     }
 }
+
+/* Keep the primary workflow visually quiet and easy to scan. */
+.home-container {
+    background: #f6f8fb;
+
+    .top-nav {
+        padding: 1rem clamp(1rem, 4vw, 3.5rem);
+        background: #ffffff;
+
+        .brand {
+            color: #172033;
+
+            .logo-icon {
+                color: #2563eb;
+            }
+        }
+    }
+
+    .page-header {
+        padding-top: clamp(2rem, 5vw, 3.5rem);
+
+        h1 {
+            font-size: clamp(1.8rem, 4vw, 2.7rem);
+            color: #172033;
+
+            .highlight {
+                color: #2563eb;
+            }
+        }
+
+        p {
+            max-width: 680px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+    }
+
+    .home {
+        gap: 1.25rem;
+
+        .left,
+        .right {
+            border-radius: 10px;
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+        }
+
+        textarea {
+            min-height: 9rem;
+        }
+
+        .generate-btn {
+            background: #2563eb;
+            box-shadow: none;
+
+            &:hover:not(:disabled) {
+                background: #1d4ed8;
+                box-shadow: none;
+            }
+        }
+    }
+}
+
+@media (max-width: 760px) {
+    .home-container {
+        .top-nav,
+        .user-section {
+            align-items: flex-start;
+        }
+
+        .top-nav {
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .brand {
+            font-size: 1rem;
+        }
+
+        .user-section {
+            width: 100%;
+            justify-content: space-between;
+        }
+
+        .home {
+            display: flex;
+            flex-direction: column;
+
+            .left,
+            .right {
+                width: 100%;
+                padding: 1.15rem;
+            }
+        }
+
+        .page-header .action-banner {
+            align-items: stretch;
+            flex-direction: column;
+
+            .sample-btn,
+            .clear-btn {
+                width: 100%;
+            }
+        }
+    }
+}

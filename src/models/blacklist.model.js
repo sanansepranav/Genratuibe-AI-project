@@ -1,14 +1,23 @@
-const mongoose = require("mongoose");
+const { getSupabaseClient } = require("../config/database");
 
-const blacklistTokenSchema = new mongoose.Schema({
-    token: {
-        type: String,
-        required: [true, "token is required to add to blacklist"],
-    }
-}, {
-    timestamps: true,
-});
+module.exports = {
+    async findOne({ token }) {
+        const { data, error } = await getSupabaseClient()
+            .from("blacklist_tokens")
+            .select("id")
+            .eq("token", token)
+            .maybeSingle();
+        if (error) throw error;
+        return data;
+    },
 
-const tokenBlacklistModel = mongoose.model("blacklistToken", blacklistTokenSchema);
-
-module.exports = tokenBlacklistModel;
+    async create({ token }) {
+        const { data, error } = await getSupabaseClient()
+            .from("blacklist_tokens")
+            .insert({ token })
+            .select()
+            .single();
+        if (error) throw error;
+        return data;
+    },
+};

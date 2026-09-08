@@ -18,6 +18,10 @@ export default defineConfig({
       'axios': path.resolve(__dirname, 'node_modules/axios'),
     },
   },
+  build: {
+    outDir: path.resolve(__dirname, '../../dist'),
+    emptyOutDir: true,
+  },
   server: {
     port: 5173,
     host: true,
