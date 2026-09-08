@@ -18,7 +18,7 @@ const AdminDashboard = () => {
     const { user, handleLogout } = useAuth();
     const navigate = useNavigate();
 
-    // Tab state
+    // Active navigation tab: "overview" | "users" | "reports" | "system"
     const [activeTab, setActiveTab] = useState("overview");
 
     // Loading & Notification states
@@ -43,7 +43,6 @@ const AdminDashboard = () => {
     const [isReportModalOpen, setIsReportModalOpen] = useState(false);
     const [loadingReportDetails, setLoadingReportDetails] = useState(false);
 
-    // Initial Data Fetch
     useEffect(() => {
         fetchAllData();
     }, []);
@@ -76,7 +75,7 @@ const AdminDashboard = () => {
     // User Actions
     const handleToggleRole = async (targetUser) => {
         const newRole = targetUser.role === "admin" ? "user" : "admin";
-        if (!window.confirm(`Are you sure you want to change ${targetUser.username}'s role to ${newRole.toUpperCase()}?`)) return;
+        if (!window.confirm(`Change ${targetUser.username}'s role to ${newRole.toUpperCase()}?`)) return;
 
         try {
             await updateUserRole(targetUser.id, newRole);
@@ -88,7 +87,7 @@ const AdminDashboard = () => {
     };
 
     const handleDeleteUser = async (targetUser) => {
-        if (!window.confirm(`Are you sure you want to delete user "${targetUser.username}"? All associated interview reports will also be deleted.`)) return;
+        if (!window.confirm(`Delete candidate "${targetUser.username}" and all their interview reports?`)) return;
 
         try {
             await deleteUser(targetUser.id);
@@ -143,7 +142,6 @@ const AdminDashboard = () => {
         }
     };
 
-    // Seed Admin Action
     const handleSeedAdmin = async () => {
         try {
             const res = await seedAdminAccount();
@@ -154,7 +152,6 @@ const AdminDashboard = () => {
         }
     };
 
-    // Export Data JSON
     const handleExportData = () => {
         const exportObj = {
             exportedAt: new Date().toISOString(),
@@ -198,311 +195,302 @@ const AdminDashboard = () => {
         return matchesSearch && matchesScore;
     });
 
+    const totalCandidatesCount = statsData?.stats?.totalUsers ?? usersList.length;
+    const totalReportsCount = statsData?.stats?.totalReports ?? reportsList.length;
+    const avgScore = statsData?.stats?.averageMatchScore ?? 0;
+    const isSystemHealthy = statsData?.systemHealth?.databaseConnected;
+
+    const highCount = statsData?.stats?.scoreDistribution?.high ?? 0;
+    const medCount = statsData?.stats?.scoreDistribution?.medium ?? 0;
+    const lowCount = statsData?.stats?.scoreDistribution?.low ?? 0;
+    const totalScored = (highCount + medCount + lowCount) || 1;
+
     return (
-        <div className="admin-wrapper">
-            {/* Header */}
-            <header className="admin-header">
-                <div className="header-brand">
-                    <div className="badge-shield">🛡️</div>
-                    <div>
-                        <h1>Interview AI Studio Admin</h1>
+        <div className="admin-antigravity-layout">
+            {/* 1. Slim Fixed Left Sidebar (240px) */}
+            <aside className="admin-sidebar">
+                <div className="sidebar-brand">
+                    <div className="brand-shield-icon">⚡</div>
+                    <div className="brand-text-wrap">
+                        <span className="brand-title">Interview AI</span>
+                        <span className="brand-sub">Admin Console</span>
                     </div>
-                    <span className="version-tag">SUPER ADMIN</span>
                 </div>
 
-                <div className="header-actions">
-                    <div className="admin-profile">
-                        <div className="avatar">
-                            {(user?.username || "A").charAt(0).toUpperCase()}
-                        </div>
-                        <span className="name">{user?.username || "Admin"}</span>
-                        <span className="role-pill">ADMIN</span>
-                    </div>
+                <nav className="sidebar-nav">
+                    <div className="nav-group-label">MANAGEMENT</div>
 
-                    <Link to="/" className="back-app-btn">
-                        <span>← Candidate Studio</span>
-                    </Link>
-                </div>
-            </header>
-
-            {/* Notification Toast */}
-            {toast.show && (
-                <div style={{
-                    position: "fixed",
-                    top: "85px",
-                    right: "32px",
-                    zIndex: 999,
-                    background: toast.type === "error" ? "#ef4444" : toast.type === "success" ? "#10b981" : "#6366f1",
-                    color: "#ffffff",
-                    padding: "12px 20px",
-                    borderRadius: "10px",
-                    boxShadow: "0 10px 25px -5px rgba(0,0,0,0.5)",
-                    fontSize: "0.9rem",
-                    fontWeight: "600",
-                    animation: "fadeIn 0.2s ease"
-                }}>
-                    {toast.message}
-                </div>
-            )}
-
-            <main className="admin-container">
-                {/* Top Metrics Row */}
-                <section className="metrics-grid">
-                    <div className="metric-card" style={{ "--card-glow": "#3b82f6" }}>
-                        <div className="icon-box blue">👥</div>
-                        <div className="metric-content">
-                            <div className="metric-label">Registered Candidates</div>
-                            <div className="metric-value">{statsData?.stats?.totalUsers ?? usersList.length}</div>
-                            <div className="metric-sub">Platform-wide user accounts</div>
-                        </div>
-                    </div>
-
-                    <div className="metric-card" style={{ "--card-glow": "#a855f7" }}>
-                        <div className="icon-box purple">📄</div>
-                        <div className="metric-content">
-                            <div className="metric-label">Reports & Resumes</div>
-                            <div className="metric-value">{statsData?.stats?.totalReports ?? reportsList.length}</div>
-                            <div className="metric-sub">AI evaluations generated</div>
-                        </div>
-                    </div>
-
-                    <div className="metric-card" style={{ "--card-glow": "#10b981" }}>
-                        <div className="icon-box emerald">🎯</div>
-                        <div className="metric-content">
-                            <div className="metric-label">Average Match Score</div>
-                            <div className="metric-value">{statsData?.stats?.averageMatchScore ?? 0}%</div>
-                            <div className="metric-sub">Candidate-to-job relevance</div>
-                        </div>
-                    </div>
-
-                    <div className="metric-card" style={{ "--card-glow": "#f59e0b" }}>
-                        <div className="icon-box amber">⚡</div>
-                        <div className="metric-content">
-                            <div className="metric-label">System Health</div>
-                            <div className="metric-value" style={{ fontSize: "1.35rem", color: statsData?.systemHealth?.databaseConnected ? "#34d399" : "#f87171" }}>
-                                {statsData?.systemHealth?.databaseConnected ? "Operational" : "Degraded"}
-                            </div>
-                            <div className="metric-sub">
-                                Gemini AI: {statsData?.systemHealth?.geminiConfigured ? "Connected" : "Check Key"}
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                {/* Tabs Navigation */}
-                <div className="nav-tabs">
                     <button
-                        className={`tab-btn ${activeTab === "overview" ? "active" : ""}`}
+                        className={`sidebar-nav-item ${activeTab === "overview" ? "active" : ""}`}
                         onClick={() => setActiveTab("overview")}
                     >
-                        <span>📊 Analytics Overview</span>
+                        <span className="item-icon">📊</span>
+                        <span className="item-text">Dashboard</span>
+                        {activeTab === "overview" && <span className="active-dot" />}
                     </button>
 
                     <button
-                        className={`tab-btn ${activeTab === "users" ? "active" : ""}`}
+                        className={`sidebar-nav-item ${activeTab === "users" ? "active" : ""}`}
                         onClick={() => setActiveTab("users")}
                     >
-                        <span>👥 Candidates & Admins</span>
-                        <span className="tab-count">{usersList.length}</span>
+                        <span className="item-icon">👥</span>
+                        <span className="item-text">Candidates & Users</span>
+                        <span className="pill-counter">{usersList.length}</span>
                     </button>
 
                     <button
-                        className={`tab-btn ${activeTab === "reports" ? "active" : ""}`}
+                        className={`sidebar-nav-item ${activeTab === "reports" ? "active" : ""}`}
                         onClick={() => setActiveTab("reports")}
                     >
-                        <span>📄 Interview Reports</span>
-                        <span className="tab-count">{reportsList.length}</span>
+                        <span className="item-icon">📄</span>
+                        <span className="item-text">Interview Reports</span>
+                        <span className="pill-counter">{reportsList.length}</span>
                     </button>
+
+                    <div className="nav-group-label" style={{ marginTop: "20px" }}>SYSTEM</div>
 
                     <button
-                        className={`tab-btn ${activeTab === "system" ? "active" : ""}`}
+                        className={`sidebar-nav-item ${activeTab === "system" ? "active" : ""}`}
                         onClick={() => setActiveTab("system")}
                     >
-                        <span>⚙️ Diagnostics & Credentials</span>
+                        <span className="item-icon">⚙️</span>
+                        <span className="item-text">Diagnostics & Keys</span>
                     </button>
+                </nav>
+
+                {/* Sidebar Bottom Profile */}
+                <div className="sidebar-footer">
+                    <Link to="/" className="sidebar-app-link">
+                        <span>← Return to Studio</span>
+                    </Link>
+
+                    <div className="sidebar-user-card">
+                        <div className="user-avatar-circle">
+                            {(user?.username || "A").charAt(0).toUpperCase()}
+                        </div>
+                        <div className="user-info-text">
+                            <span className="user-name">{user?.username || "Admin"}</span>
+                            <span className="user-badge">ADMINISTRATOR</span>
+                        </div>
+                        <button className="user-logout-btn" onClick={handleLogout} title="Logout">
+                            ⏻
+                        </button>
+                    </div>
                 </div>
+            </aside>
 
-                {/* TAB 1: OVERVIEW */}
-                {activeTab === "overview" && (
-                    <div className="tab-content">
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
-                            <div>
-                                <h2 style={{ margin: 0, fontSize: "1.3rem", fontWeight: "700" }}>Platform Performance & Analytics</h2>
-                                <p style={{ margin: "4px 0 0 0", color: "#94a3b8", fontSize: "0.85rem" }}>
-                                    High-level view of candidate preparation and system activity
-                                </p>
+            {/* 2. Main Full-Width Content Area */}
+            <div className="admin-main-viewport">
+                {/* Floating Notification Toast */}
+                {toast.show && (
+                    <div className={`admin-toast-banner ${toast.type}`}>
+                        <span>{toast.message}</span>
+                    </div>
+                )}
+
+                {/* Top Action Bar */}
+                <header className="admin-top-bar">
+                    <div className="top-bar-left">
+                        <h2>
+                            {activeTab === "overview" && "Dashboard Overview"}
+                            {activeTab === "users" && "Candidates & User Accounts"}
+                            {activeTab === "reports" && "Platform Interview Reports"}
+                            {activeTab === "system" && "System Diagnostics & Setup"}
+                        </h2>
+                        <span className="date-indicator">
+                            {new Date().toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
+                        </span>
+                    </div>
+
+                    <div className="top-bar-actions">
+                        <button className="top-btn secondary" onClick={handleSeedAdmin}>
+                            <span>🔑 Seed Admin</span>
+                        </button>
+                        <button className="top-btn secondary" onClick={handleExportData}>
+                            <span>📥 Export JSON</span>
+                        </button>
+                        <button className="top-btn primary" onClick={fetchAllData}>
+                            <span>🔄 Refresh</span>
+                        </button>
+                    </div>
+                </header>
+
+                <div className="admin-content-scroll">
+                    {/* Top Row: 4 KPI Stat Cards */}
+                    <section className="kpi-cards-grid">
+                        {/* KPI 1: Total Candidates */}
+                        <div className="kpi-card">
+                            <div className="kpi-top">
+                                <span className="kpi-label">Total Candidates</span>
+                                <span className="trend-badge positive">+100% active</span>
                             </div>
-
-                            <div style={{ display: "flex", gap: "10px" }}>
-                                <button
-                                    onClick={handleSeedAdmin}
-                                    style={{
-                                        background: "rgba(99, 102, 241, 0.15)",
-                                        border: "1px solid rgba(99, 102, 241, 0.3)",
-                                        color: "#818cf8",
-                                        padding: "8px 14px",
-                                        borderRadius: "8px",
-                                        fontWeight: "600",
-                                        cursor: "pointer",
-                                        fontSize: "0.85rem"
-                                    }}
-                                >
-                                    🔑 Seed Admin Account
-                                </button>
-
-                                <button
-                                    onClick={handleExportData}
-                                    style={{
-                                        background: "rgba(255, 255, 255, 0.05)",
-                                        border: "1px solid rgba(255, 255, 255, 0.1)",
-                                        color: "#cbd5e1",
-                                        padding: "8px 14px",
-                                        borderRadius: "8px",
-                                        fontWeight: "600",
-                                        cursor: "pointer",
-                                        fontSize: "0.85rem"
-                                    }}
-                                >
-                                    📥 Export JSON
-                                </button>
-
-                                <button
-                                    onClick={fetchAllData}
-                                    style={{
-                                        background: "#6366f1",
-                                        border: "none",
-                                        color: "#fff",
-                                        padding: "8px 14px",
-                                        borderRadius: "8px",
-                                        fontWeight: "600",
-                                        cursor: "pointer",
-                                        fontSize: "0.85rem"
-                                    }}
-                                >
-                                    🔄 Refresh
-                                </button>
-                            </div>
+                            <div className="kpi-number">{totalCandidatesCount}</div>
+                            <div className="kpi-sub">Registered platform users</div>
                         </div>
 
-                        {/* Score Distribution Bars */}
-                        <div style={{
-                            background: "rgba(15, 23, 42, 0.8)",
-                            border: "1px solid rgba(255, 255, 255, 0.07)",
-                            borderRadius: "14px",
-                            padding: "24px",
-                            marginBottom: "28px"
-                        }}>
-                            <h3 style={{ margin: "0 0 16px 0", fontSize: "1rem", color: "#f8fafc" }}>
-                                Candidate Match Score Distribution
-                            </h3>
-                            <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-                                <div>
-                                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.85rem", marginBottom: "6px" }}>
-                                        <span style={{ color: "#34d399", fontWeight: "600" }}>High Match (75% - 100%)</span>
-                                        <span style={{ color: "#94a3b8" }}>{statsData?.stats?.scoreDistribution?.high ?? 0} candidates</span>
-                                    </div>
-                                    <div style={{ height: "8px", background: "rgba(255,255,255,0.06)", borderRadius: "4px", overflow: "hidden" }}>
-                                        <div style={{
-                                            height: "100%",
-                                            width: `${reportsList.length > 0 ? ((statsData?.stats?.scoreDistribution?.high || 0) / reportsList.length) * 100 : 0}%`,
-                                            background: "#10b981",
-                                            borderRadius: "4px"
-                                        }} />
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.85rem", marginBottom: "6px" }}>
-                                        <span style={{ color: "#fbbf24", fontWeight: "600" }}>Moderate Match (50% - 74%)</span>
-                                        <span style={{ color: "#94a3b8" }}>{statsData?.stats?.scoreDistribution?.medium ?? 0} candidates</span>
-                                    </div>
-                                    <div style={{ height: "8px", background: "rgba(255,255,255,0.06)", borderRadius: "4px", overflow: "hidden" }}>
-                                        <div style={{
-                                            height: "100%",
-                                            width: `${reportsList.length > 0 ? ((statsData?.stats?.scoreDistribution?.medium || 0) / reportsList.length) * 100 : 0}%`,
-                                            background: "#f59e0b",
-                                            borderRadius: "4px"
-                                        }} />
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.85rem", marginBottom: "6px" }}>
-                                        <span style={{ color: "#f87171", fontWeight: "600" }}>Needs Growth (&lt; 50%)</span>
-                                        <span style={{ color: "#94a3b8" }}>{statsData?.stats?.scoreDistribution?.low ?? 0} candidates</span>
-                                    </div>
-                                    <div style={{ height: "8px", background: "rgba(255,255,255,0.06)", borderRadius: "4px", overflow: "hidden" }}>
-                                        <div style={{
-                                            height: "100%",
-                                            width: `${reportsList.length > 0 ? ((statsData?.stats?.scoreDistribution?.low || 0) / reportsList.length) * 100 : 0}%`,
-                                            background: "#ef4444",
-                                            borderRadius: "4px"
-                                        }} />
-                                    </div>
-                                </div>
+                        {/* KPI 2: Average Match Score */}
+                        <div className="kpi-card">
+                            <div className="kpi-top">
+                                <span className="kpi-label">Avg Match Score</span>
+                                <span className="trend-badge highlight">{avgScore >= 70 ? "High Quality" : "Moderate"}</span>
                             </div>
+                            <div className="kpi-number">{avgScore}%</div>
+                            <div className="kpi-sub">Job alignment accuracy</div>
                         </div>
 
-                        {/* Recent Candidates & Reports split */}
-                        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(450px, 1fr))", gap: "24px" }}>
-                            {/* Recent Candidates */}
-                            <div style={{
-                                background: "rgba(15, 23, 42, 0.7)",
-                                border: "1px solid rgba(255, 255, 255, 0.07)",
-                                borderRadius: "14px",
-                                padding: "20px"
-                            }}>
-                                <h3 style={{ margin: "0 0 16px 0", fontSize: "1rem", color: "#f8fafc" }}>
-                                    Recent Registrations
-                                </h3>
-                                <div className="table-container">
-                                    <table>
-                                        <thead>
-                                            <tr>
-                                                <th>User</th>
-                                                <th>Email</th>
-                                                <th>Role</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {usersList.slice(0, 5).map((u) => (
-                                                <tr key={u.id}>
-                                                    <td style={{ fontWeight: "600", color: "#f1f5f9" }}>{u.username}</td>
-                                                    <td style={{ color: "#94a3b8", fontSize: "0.82rem" }}>{u.email}</td>
-                                                    <td>
-                                                        <span className={`badge ${u.role === 'admin' ? 'admin' : 'user'}`}>
-                                                            {u.role}
-                                                        </span>
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                            {usersList.length === 0 && (
+                        {/* KPI 3: Total Reports Generated */}
+                        <div className="kpi-card">
+                            <div className="kpi-top">
+                                <span className="kpi-label">Reports & Resumes</span>
+                                <span className="trend-badge neutral">AI Synthesized</span>
+                            </div>
+                            <div className="kpi-number">{totalReportsCount}</div>
+                            <div className="kpi-sub">Interview packages created</div>
+                        </div>
+
+                        {/* KPI 4: System Health */}
+                        <div className="kpi-card">
+                            <div className="kpi-top">
+                                <span className="kpi-label">System Health</span>
+                                <span className={`status-pill ${isSystemHealthy ? "healthy" : "warning"}`}>
+                                    {isSystemHealthy ? "● Operational" : "● Check Config"}
+                                </span>
+                            </div>
+                            <div className="kpi-number" style={{ fontSize: "1.6rem" }}>
+                                {isSystemHealthy ? "Healthy" : "Attention"}
+                            </div>
+                            <div className="kpi-sub">
+                                Gemini AI: {statsData?.systemHealth?.geminiConfigured ? "Connected" : "Set API Key"}
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* TAB 1: OVERVIEW DASHBOARD */}
+                    {activeTab === "overview" && (
+                        <div className="dashboard-sections-wrap">
+                            {/* Row: Score Distribution Chart + Quick Summary */}
+                            <div className="overview-dual-grid">
+                                {/* Score Distribution Card */}
+                                <div className="card-container">
+                                    <div className="card-header">
+                                        <div>
+                                            <h3>Candidate Match Score Distribution</h3>
+                                            <p className="card-sub">Distribution of candidate alignment scores across all generated reports</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="score-bars-chart">
+                                        <div className="chart-row">
+                                            <div className="row-labels">
+                                                <span className="tier-badge green">High Match (75% - 100%)</span>
+                                                <span className="count-num">{highCount} candidate{highCount !== 1 ? "s" : ""} ({Math.round((highCount / totalScored) * 100)}%)</span>
+                                            </div>
+                                            <div className="progress-track">
+                                                <div
+                                                    className="progress-fill green"
+                                                    style={{ width: `${(highCount / totalScored) * 100}%` }}
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div className="chart-row">
+                                            <div className="row-labels">
+                                                <span className="tier-badge amber">Moderate Match (50% - 74%)</span>
+                                                <span className="count-num">{medCount} candidate{medCount !== 1 ? "s" : ""} ({Math.round((medCount / totalScored) * 100)}%)</span>
+                                            </div>
+                                            <div className="progress-track">
+                                                <div
+                                                    className="progress-fill amber"
+                                                    style={{ width: `${(medCount / totalScored) * 100}%` }}
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div className="chart-row">
+                                            <div className="row-labels">
+                                                <span className="tier-badge red">Needs Growth (&lt; 50%)</span>
+                                                <span className="count-num">{lowCount} candidate{lowCount !== 1 ? "s" : ""} ({Math.round((lowCount / totalScored) * 100)}%)</span>
+                                            </div>
+                                            <div className="progress-track">
+                                                <div
+                                                    className="progress-fill red"
+                                                    style={{ width: `${(lowCount / totalScored) * 100}%` }}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Recent Registrations Card */}
+                                <div className="card-container">
+                                    <div className="card-header">
+                                        <div>
+                                            <h3>Recent Candidate Registrations</h3>
+                                            <p className="card-sub">Latest users who joined the interview preparation platform</p>
+                                        </div>
+                                        <button className="header-view-all" onClick={() => setActiveTab("users")}>
+                                            View All →
+                                        </button>
+                                    </div>
+
+                                    <div className="table-wrapper mini">
+                                        <table className="antigravity-table">
+                                            <thead>
                                                 <tr>
-                                                    <td colSpan="3" style={{ textAlign: "center", color: "#64748b" }}>No users registered yet.</td>
+                                                    <th>Candidate</th>
+                                                    <th>Email</th>
+                                                    <th>Role</th>
                                                 </tr>
-                                            )}
-                                        </tbody>
-                                    </table>
+                                            </thead>
+                                            <tbody>
+                                                {usersList.slice(0, 5).map((u) => (
+                                                    <tr key={u.id}>
+                                                        <td>
+                                                            <div className="user-cell">
+                                                                <span className="avatar-chip">{(u.username || "U").charAt(0).toUpperCase()}</span>
+                                                                <span className="username-text">{u.username}</span>
+                                                            </div>
+                                                        </td>
+                                                        <td className="email-text">{u.email}</td>
+                                                        <td>
+                                                            <span className={`role-badge ${u.role === "admin" ? "admin" : "user"}`}>
+                                                                {u.role}
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                                {usersList.length === 0 && (
+                                                    <tr>
+                                                        <td colSpan="3" className="empty-cell">No registrations found.</td>
+                                                    </tr>
+                                                )}
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
                             </div>
 
-                            {/* Recent Reports */}
-                            <div style={{
-                                background: "rgba(15, 23, 42, 0.7)",
-                                border: "1px solid rgba(255, 255, 255, 0.07)",
-                                borderRadius: "14px",
-                                padding: "20px"
-                            }}>
-                                <h3 style={{ margin: "0 0 16px 0", fontSize: "1rem", color: "#f8fafc" }}>
-                                    Recent Interview Reports
-                                </h3>
-                                <div className="table-container">
-                                    <table>
+                            {/* Recent Reports Table Card */}
+                            <div className="card-container" style={{ marginTop: "24px" }}>
+                                <div className="card-header">
+                                    <div>
+                                        <h3>Recent Generated Interview Plans & Resumes</h3>
+                                        <p className="card-sub">AI evaluations synthesized for candidate target roles</p>
+                                    </div>
+                                    <button className="header-view-all" onClick={() => setActiveTab("reports")}>
+                                        View All Reports →
+                                    </button>
+                                </div>
+
+                                <div className="table-wrapper">
+                                    <table className="antigravity-table">
                                         <thead>
                                             <tr>
-                                                <th>Title</th>
+                                                <th>Report Title</th>
                                                 <th>Candidate</th>
-                                                <th>Match</th>
+                                                <th>Match Score</th>
+                                                <th>Created Date</th>
+                                                <th>Actions</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -511,19 +499,27 @@ const AdminDashboard = () => {
                                                 const badgeClass = score >= 75 ? "score-high" : score >= 50 ? "score-medium" : "score-low";
                                                 return (
                                                     <tr key={r.id}>
-                                                        <td style={{ fontWeight: "600", color: "#f1f5f9" }}>{r.title}</td>
-                                                        <td style={{ color: "#94a3b8", fontSize: "0.82rem" }}>{r.userName}</td>
+                                                        <td className="title-cell">{r.title}</td>
+                                                        <td className="user-cell-plain">{r.userName}</td>
                                                         <td>
-                                                            <span className={`badge ${badgeClass}`}>
-                                                                {score}%
+                                                            <span className={`score-badge ${badgeClass}`}>
+                                                                {score}% Match
                                                             </span>
+                                                        </td>
+                                                        <td className="date-cell">
+                                                            {r.createdAt ? new Date(r.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : "Recently"}
+                                                        </td>
+                                                        <td>
+                                                            <button className="btn-action view" onClick={() => handleViewReport(r.id)}>
+                                                                Inspect
+                                                            </button>
                                                         </td>
                                                     </tr>
                                                 );
                                             })}
                                             {reportsList.length === 0 && (
                                                 <tr>
-                                                    <td colSpan="3" style={{ textAlign: "center", color: "#64748b" }}>No reports generated yet.</td>
+                                                    <td colSpan="5" className="empty-cell">No interview reports generated yet.</td>
                                                 </tr>
                                             )}
                                         </tbody>
@@ -531,306 +527,272 @@ const AdminDashboard = () => {
                                 </div>
                             </div>
                         </div>
-                    </div>
-                )}
+                    )}
 
-                {/* TAB 2: USERS MANAGEMENT */}
-                {activeTab === "users" && (
-                    <div className="tab-content">
-                        <div className="control-bar">
-                            <div className="search-box">
-                                <span className="search-icon">🔍</span>
-                                <input
-                                    type="text"
-                                    placeholder="Search candidates by username or email..."
-                                    value={userSearch}
-                                    onChange={(e) => setUserSearch(e.target.value)}
-                                />
+                    {/* TAB 2: CANDIDATES & USERS */}
+                    {activeTab === "users" && (
+                        <div className="card-container">
+                            <div className="table-toolbar">
+                                <div className="search-input-wrap">
+                                    <span className="search-icon">🔍</span>
+                                    <input
+                                        type="text"
+                                        placeholder="Search candidate by username or email..."
+                                        value={userSearch}
+                                        onChange={(e) => setUserSearch(e.target.value)}
+                                    />
+                                </div>
+
+                                <div className="toolbar-actions">
+                                    <select
+                                        className="role-filter-select"
+                                        value={userRoleFilter}
+                                        onChange={(e) => setUserRoleFilter(e.target.value)}
+                                    >
+                                        <option value="all">All Roles</option>
+                                        <option value="user">Candidate (User)</option>
+                                        <option value="admin">Administrator</option>
+                                    </select>
+
+                                    <button
+                                        className="btn-create-user"
+                                        onClick={() => setIsCreateUserOpen(true)}
+                                    >
+                                        <span>+ Add User</span>
+                                    </button>
+                                </div>
                             </div>
 
-                            <div className="filter-group">
-                                <select
-                                    value={userRoleFilter}
-                                    onChange={(e) => setUserRoleFilter(e.target.value)}
-                                >
-                                    <option value="all">All Roles</option>
-                                    <option value="user">Candidate (User)</option>
-                                    <option value="admin">Administrator</option>
-                                </select>
-
-                                <button
-                                    className="primary-action-btn"
-                                    onClick={() => setIsCreateUserOpen(true)}
-                                >
-                                    <span>+ Add New User</span>
-                                </button>
-                            </div>
-                        </div>
-
-                        <div className="table-container">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Candidate / Username</th>
-                                        <th>Email Address</th>
-                                        <th>Role</th>
-                                        <th>Reports Count</th>
-                                        <th>Registration Date</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {filteredUsers.map((u) => (
-                                        <tr key={u.id}>
-                                            <td>
-                                                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                                                    <div style={{
-                                                        width: "32px",
-                                                        height: "32px",
-                                                        borderRadius: "50%",
-                                                        background: u.role === "admin" ? "#6366f1" : "#334155",
-                                                        display: "flex",
-                                                        alignItems: "center",
-                                                        justifyContent: "center",
-                                                        fontWeight: "700",
-                                                        color: "#fff",
-                                                        fontSize: "0.85rem"
-                                                    }}>
-                                                        {(u.username || "U").charAt(0).toUpperCase()}
-                                                    </div>
-                                                    <span style={{ fontWeight: "600", color: "#f8fafc" }}>{u.username}</span>
-                                                </div>
-                                            </td>
-                                            <td style={{ color: "#94a3b8" }}>{u.email}</td>
-                                            <td>
-                                                <span className={`badge ${u.role === 'admin' ? 'admin' : 'user'}`}>
-                                                    {u.role}
-                                                </span>
-                                            </td>
-                                            <td style={{ fontWeight: "600", color: "#cbd5e1" }}>
-                                                {u.reportCount || 0}
-                                            </td>
-                                            <td style={{ color: "#64748b", fontSize: "0.82rem" }}>
-                                                {u.createdAt ? new Date(u.createdAt).toLocaleDateString() : "Recent"}
-                                            </td>
-                                            <td>
-                                                <div className="action-btn-group">
-                                                    <button
-                                                        className="btn-action role-toggle"
-                                                        onClick={() => handleToggleRole(u)}
-                                                        title="Toggle between admin and user"
-                                                    >
-                                                        {u.role === "admin" ? "Demote" : "Make Admin"}
-                                                    </button>
-                                                    <button
-                                                        className="btn-action danger"
-                                                        onClick={() => handleDeleteUser(u)}
-                                                        title="Delete user and all their data"
-                                                    >
-                                                        Delete
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                    {filteredUsers.length === 0 && (
+                            <div className="table-wrapper">
+                                <table className="antigravity-table">
+                                    <thead>
                                         <tr>
-                                            <td colSpan="6" style={{ textAlign: "center", padding: "32px", color: "#64748b" }}>
-                                                No users match the current search filter.
-                                            </td>
+                                            <th>Candidate</th>
+                                            <th>Email</th>
+                                            <th>Role</th>
+                                            <th>Reports Count</th>
+                                            <th>Registration Date</th>
+                                            <th>Actions</th>
                                         </tr>
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                )}
-
-                {/* TAB 3: INTERVIEW REPORTS */}
-                {activeTab === "reports" && (
-                    <div className="tab-content">
-                        <div className="control-bar">
-                            <div className="search-box">
-                                <span className="search-icon">🔍</span>
-                                <input
-                                    type="text"
-                                    placeholder="Search reports by title, candidate, or job description..."
-                                    value={reportSearch}
-                                    onChange={(e) => setReportSearch(e.target.value)}
-                                />
-                            </div>
-
-                            <div className="filter-group">
-                                <select
-                                    value={reportScoreFilter}
-                                    onChange={(e) => setReportScoreFilter(e.target.value)}
-                                >
-                                    <option value="all">All Match Scores</option>
-                                    <option value="high">High Match (75%+)</option>
-                                    <option value="medium">Moderate Match (50-74%)</option>
-                                    <option value="low">Needs Improvement (&lt;50%)</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div className="table-container">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Report Title</th>
-                                        <th>Candidate</th>
-                                        <th>Target Role / Snippet</th>
-                                        <th>Match Score</th>
-                                        <th>Created Date</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {filteredReports.map((r) => {
-                                        const score = r.matchScore || 0;
-                                        const badgeClass = score >= 75 ? "score-high" : score >= 50 ? "score-medium" : "score-low";
-                                        return (
-                                            <tr key={r.id}>
-                                                <td style={{ fontWeight: "600", color: "#f8fafc" }}>
-                                                    {r.title}
-                                                </td>
-                                                <td style={{ color: "#cbd5e1" }}>
-                                                    {r.userName}
-                                                    {r.userEmail && (
-                                                        <div style={{ fontSize: "0.75rem", color: "#64748b" }}>{r.userEmail}</div>
-                                                    )}
-                                                </td>
-                                                <td style={{ color: "#94a3b8", fontSize: "0.82rem", maxWidth: "300px" }}>
-                                                    {r.jobDescription ? r.jobDescription.slice(0, 80) + "..." : "N/A"}
-                                                </td>
+                                    </thead>
+                                    <tbody>
+                                        {filteredUsers.map((u) => (
+                                            <tr key={u.id}>
                                                 <td>
-                                                    <span className={`badge ${badgeClass}`}>
-                                                        {score}% Match
+                                                    <div className="user-cell">
+                                                        <span className="avatar-chip">{(u.username || "U").charAt(0).toUpperCase()}</span>
+                                                        <span className="username-text">{u.username}</span>
+                                                    </div>
+                                                </td>
+                                                <td className="email-text">{u.email}</td>
+                                                <td>
+                                                    <span className={`role-badge ${u.role === "admin" ? "admin" : "user"}`}>
+                                                        {u.role}
                                                     </span>
                                                 </td>
-                                                <td style={{ color: "#64748b", fontSize: "0.82rem" }}>
-                                                    {r.createdAt ? new Date(r.createdAt).toLocaleDateString() : "Recent"}
+                                                <td className="report-count-cell">{u.reportCount || 0}</td>
+                                                <td className="date-cell">
+                                                    {u.createdAt ? new Date(u.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : "Recently"}
                                                 </td>
                                                 <td>
-                                                    <div className="action-btn-group">
+                                                    <div className="action-buttons-group">
                                                         <button
-                                                            className="btn-action view"
-                                                            onClick={() => handleViewReport(r.id)}
+                                                            className="btn-action role"
+                                                            onClick={() => handleToggleRole(u)}
+                                                            title="Toggle role"
                                                         >
-                                                            Inspect
+                                                            {u.role === "admin" ? "Demote" : "Make Admin"}
                                                         </button>
                                                         <button
                                                             className="btn-action danger"
-                                                            onClick={() => handleDeleteReport(r.id, r.title)}
+                                                            onClick={() => handleDeleteUser(u)}
+                                                            title="Delete account"
                                                         >
                                                             Delete
                                                         </button>
                                                     </div>
                                                 </td>
                                             </tr>
-                                        );
-                                    })}
-                                    {filteredReports.length === 0 && (
-                                        <tr>
-                                            <td colSpan="6" style={{ textAlign: "center", padding: "32px", color: "#64748b" }}>
-                                                No interview reports match your filter.
-                                            </td>
-                                        </tr>
-                                    )}
-                                </tbody>
-                            </table>
+                                        ))}
+                                        {filteredUsers.length === 0 && (
+                                            <tr>
+                                                <td colSpan="6" className="empty-cell">No users match your search.</td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
-                    </div>
-                )}
+                    )}
 
-                {/* TAB 4: SYSTEM & DIAGNOSTICS */}
-                {activeTab === "system" && (
-                    <div className="tab-content">
-                        <div className="diagnostics-grid">
-                            {/* Admin Credentials Card */}
-                            <div className="diag-card" style={{ border: "1px solid rgba(99, 102, 241, 0.4)", background: "rgba(15, 23, 42, 0.9)" }}>
-                                <h3>🔑 Administrator Credentials</h3>
-                                <p style={{ fontSize: "0.85rem", color: "#94a3b8", marginBottom: "16px", lineHeight: "1.5" }}>
-                                    Default administrator login for accessing this dashboard. Use these credentials to sign in anytime:
-                                </p>
-
-                                <div className="diag-row">
-                                    <span className="diag-key">Username:</span>
-                                    <span className="diag-val" style={{ color: "#818cf8" }}>admin</span>
-                                </div>
-                                <div className="diag-row">
-                                    <span className="diag-key">Email:</span>
-                                    <span className="diag-val" style={{ color: "#818cf8" }}>admin@interviewai.com</span>
-                                </div>
-                                <div className="diag-row">
-                                    <span className="diag-key">Password:</span>
-                                    <span className="diag-val" style={{ color: "#34d399" }}>AdminPassword@2026</span>
+                    {/* TAB 3: INTERVIEW REPORTS */}
+                    {activeTab === "reports" && (
+                        <div className="card-container">
+                            <div className="table-toolbar">
+                                <div className="search-input-wrap">
+                                    <span className="search-icon">🔍</span>
+                                    <input
+                                        type="text"
+                                        placeholder="Search reports by title, candidate, or keyword..."
+                                        value={reportSearch}
+                                        onChange={(e) => setReportSearch(e.target.value)}
+                                    />
                                 </div>
 
-                                <div style={{ marginTop: "20px" }}>
-                                    <button
-                                        onClick={handleSeedAdmin}
-                                        style={{
-                                            width: "100%",
-                                            background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
-                                            border: "none",
-                                            color: "#fff",
-                                            padding: "11px",
-                                            borderRadius: "8px",
-                                            fontWeight: "600",
-                                            cursor: "pointer",
-                                            boxShadow: "0 4px 14px rgba(99, 102, 241, 0.35)"
-                                        }}
+                                <div className="toolbar-actions">
+                                    <select
+                                        className="role-filter-select"
+                                        value={reportScoreFilter}
+                                        onChange={(e) => setReportScoreFilter(e.target.value)}
                                     >
-                                        Verify / Seed Default Admin in Supabase
+                                        <option value="all">All Match Scores</option>
+                                        <option value="high">High Match (75%+)</option>
+                                        <option value="medium">Moderate Match (50-74%)</option>
+                                        <option value="low">Needs Improvement (&lt;50%)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div className="table-wrapper">
+                                <table className="antigravity-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Report Title</th>
+                                            <th>Candidate</th>
+                                            <th>Target Job Snippet</th>
+                                            <th>Match Score</th>
+                                            <th>Created Date</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {filteredReports.map((r) => {
+                                            const score = r.matchScore || 0;
+                                            const badgeClass = score >= 75 ? "score-high" : score >= 50 ? "score-medium" : "score-low";
+                                            return (
+                                                <tr key={r.id}>
+                                                    <td className="title-cell">{r.title}</td>
+                                                    <td className="user-cell-plain">
+                                                        <div>{r.userName}</div>
+                                                        {r.userEmail && <small className="sub-email">{r.userEmail}</small>}
+                                                    </td>
+                                                    <td className="snippet-cell">
+                                                        {r.jobDescription ? r.jobDescription.slice(0, 85) + "..." : "N/A"}
+                                                    </td>
+                                                    <td>
+                                                        <span className={`score-badge ${badgeClass}`}>
+                                                            {score}% Match
+                                                        </span>
+                                                    </td>
+                                                    <td className="date-cell">
+                                                        {r.createdAt ? new Date(r.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : "Recently"}
+                                                    </td>
+                                                    <td>
+                                                        <div className="action-buttons-group">
+                                                            <button className="btn-action view" onClick={() => handleViewReport(r.id)}>
+                                                                Inspect
+                                                            </button>
+                                                            <button className="btn-action danger" onClick={() => handleDeleteReport(r.id, r.title)}>
+                                                                Delete
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
+                                        {filteredReports.length === 0 && (
+                                            <tr>
+                                                <td colSpan="6" className="empty-cell">No reports match your search criteria.</td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* TAB 4: SYSTEM & DIAGNOSTICS */}
+                    {activeTab === "system" && (
+                        <div className="overview-dual-grid">
+                            {/* Administrator Credentials Card */}
+                            <div className="card-container highlight-border">
+                                <div className="card-header">
+                                    <div>
+                                        <h3>🔑 Administrator Credentials</h3>
+                                        <p className="card-sub">Use these default credentials to sign in anytime</p>
+                                    </div>
+                                </div>
+
+                                <div className="info-key-value-list">
+                                    <div className="info-row">
+                                        <span className="row-key">Username</span>
+                                        <span className="row-val highlight-val">admin</span>
+                                    </div>
+                                    <div className="info-row">
+                                        <span className="row-key">Email</span>
+                                        <span className="row-val highlight-val">admin@interviewai.com</span>
+                                    </div>
+                                    <div className="info-row">
+                                        <span className="row-key">Password</span>
+                                        <span className="row-val green-val">AdminPassword@2026</span>
+                                    </div>
+                                </div>
+
+                                <div style={{ marginTop: "24px" }}>
+                                    <button className="btn-primary-full" onClick={handleSeedAdmin}>
+                                        Verify & Seed Admin Account in Database
                                     </button>
                                 </div>
                             </div>
 
-                            {/* Database Health Card */}
-                            <div className="diag-card">
-                                <h3>🗄️ Database & Engine</h3>
-                                <div className="diag-row">
-                                    <span className="diag-key">Database Provider:</span>
-                                    <span className="diag-val">Supabase PostgreSQL</span>
+                            {/* System Status Card */}
+                            <div className="card-container">
+                                <div className="card-header">
+                                    <div>
+                                        <h3>🗄️ System Architecture & Connectivity</h3>
+                                        <p className="card-sub">Live health checks for database and generative AI services</p>
+                                    </div>
                                 </div>
-                                <div className="diag-row">
-                                    <span className="diag-key">Connection Status:</span>
-                                    <span className="diag-val" style={{ color: statsData?.systemHealth?.databaseConnected ? "#34d399" : "#f87171" }}>
-                                        {statsData?.systemHealth?.databaseConnected ? "Connected" : "Disconnected"}
-                                    </span>
-                                </div>
-                                <div className="diag-row">
-                                    <span className="diag-key">Google Gemini API:</span>
-                                    <span className="diag-val" style={{ color: statsData?.systemHealth?.geminiConfigured ? "#34d399" : "#f87171" }}>
-                                        {statsData?.systemHealth?.geminiConfigured ? "Configured & Active" : "Missing API Key"}
-                                    </span>
-                                </div>
-                                <div className="diag-row">
-                                    <span className="diag-key">Runtime Environment:</span>
-                                    <span className="diag-val">{statsData?.systemHealth?.environment || "production"}</span>
-                                </div>
-                                <div className="diag-row">
-                                    <span className="diag-key">Node.js Version:</span>
-                                    <span className="diag-val">{statsData?.systemHealth?.nodeVersion || process.version}</span>
+
+                                <div className="info-key-value-list">
+                                    <div className="info-row">
+                                        <span className="row-key">Database Engine</span>
+                                        <span className="row-val">Supabase PostgreSQL (Resilient Fallback Active)</span>
+                                    </div>
+                                    <div className="info-row">
+                                        <span className="row-key">Database Status</span>
+                                        <span className={`status-pill ${isSystemHealthy ? "healthy" : "warning"}`}>
+                                            {isSystemHealthy ? "● Connected" : "● Fallback Active"}
+                                        </span>
+                                    </div>
+                                    <div className="info-row">
+                                        <span className="row-key">Google Gemini AI Engine</span>
+                                        <span className="row-val" style={{ color: statsData?.systemHealth?.geminiConfigured ? "#34d399" : "#f87171" }}>
+                                            {statsData?.systemHealth?.geminiConfigured ? "Connected & Ready" : "Missing API Key"}
+                                        </span>
+                                    </div>
+                                    <div className="info-row">
+                                        <span className="row-key">Node.js Runtime</span>
+                                        <span className="row-val">{statsData?.systemHealth?.nodeVersion || process.version}</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                )}
-            </main>
+                    )}
+                </div>
+            </div>
 
             {/* CREATE USER MODAL */}
             {isCreateUserOpen && (
-                <div className="modal-overlay" onClick={() => setIsCreateUserOpen(false)}>
-                    <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+                <div className="modal-backdrop" onClick={() => setIsCreateUserOpen(false)}>
+                    <div className="modal-box" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
-                            <h3>Create New User / Administrator</h3>
-                            <button className="close-btn" onClick={() => setIsCreateUserOpen(false)}>×</button>
+                            <h3>Add New User / Administrator</h3>
+                            <button className="modal-close-btn" onClick={() => setIsCreateUserOpen(false)}>×</button>
                         </div>
 
                         <form onSubmit={handleCreateUserSubmit}>
-                            <div className="form-group">
+                            <div className="form-field">
                                 <label>Username *</label>
                                 <input
                                     type="text"
@@ -841,7 +803,7 @@ const AdminDashboard = () => {
                                 />
                             </div>
 
-                            <div className="form-group">
+                            <div className="form-field">
                                 <label>Email Address *</label>
                                 <input
                                     type="email"
@@ -852,7 +814,7 @@ const AdminDashboard = () => {
                                 />
                             </div>
 
-                            <div className="form-group">
+                            <div className="form-field">
                                 <label>Password *</label>
                                 <input
                                     type="password"
@@ -863,7 +825,7 @@ const AdminDashboard = () => {
                                 />
                             </div>
 
-                            <div className="form-group">
+                            <div className="form-field">
                                 <label>Account Role</label>
                                 <select
                                     value={newUserForm.role}
@@ -874,11 +836,11 @@ const AdminDashboard = () => {
                                 </select>
                             </div>
 
-                            <div className="modal-actions">
-                                <button type="button" className="btn-cancel" onClick={() => setIsCreateUserOpen(false)}>
+                            <div className="modal-footer">
+                                <button type="button" className="btn-ghost" onClick={() => setIsCreateUserOpen(false)}>
                                     Cancel
                                 </button>
-                                <button type="submit" className="btn-submit">
+                                <button type="submit" className="btn-accent">
                                     Create Account
                                 </button>
                             </div>
@@ -887,18 +849,18 @@ const AdminDashboard = () => {
                 </div>
             )}
 
-            {/* REPORT DETAIL INSPECT MODAL */}
+            {/* INSPECT REPORT MODAL */}
             {isReportModalOpen && (
-                <div className="modal-overlay" onClick={() => setIsReportModalOpen(false)}>
-                    <div className="modal-card" style={{ maxWidth: "800px" }} onClick={(e) => e.stopPropagation()}>
+                <div className="modal-backdrop" onClick={() => setIsReportModalOpen(false)}>
+                    <div className="modal-box large" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
                             <div>
                                 <h3>{selectedReport?.title || "Interview Report Inspection"}</h3>
-                                <span style={{ fontSize: "0.85rem", color: "#94a3b8" }}>
-                                    Match Score: <strong style={{ color: "#34d399" }}>{selectedReport?.matchScore || 0}%</strong>
+                                <span className="report-score-indicator">
+                                    Match Score: <strong>{selectedReport?.matchScore || 0}%</strong>
                                 </span>
                             </div>
-                            <button className="close-btn" onClick={() => setIsReportModalOpen(false)}>×</button>
+                            <button className="modal-close-btn" onClick={() => setIsReportModalOpen(false)}>×</button>
                         </div>
 
                         {loadingReportDetails ? (
@@ -906,30 +868,20 @@ const AdminDashboard = () => {
                                 Loading full report details...
                             </div>
                         ) : selectedReport ? (
-                            <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-                                <div>
-                                    <h4 style={{ margin: "0 0 8px 0", color: "#f8fafc", fontSize: "0.95rem" }}>Target Job Description</h4>
-                                    <div style={{
-                                        background: "rgba(15, 23, 42, 0.8)",
-                                        border: "1px solid rgba(255,255,255,0.06)",
-                                        padding: "14px",
-                                        borderRadius: "8px",
-                                        fontSize: "0.85rem",
-                                        color: "#cbd5e1",
-                                        maxHeight: "150px",
-                                        overflowY: "auto",
-                                        whiteSpace: "pre-wrap"
-                                    }}>
+                            <div className="modal-scroll-body">
+                                <div className="report-detail-section">
+                                    <h4>Target Job Description</h4>
+                                    <div className="code-snippet-box">
                                         {selectedReport.jobDescription}
                                     </div>
                                 </div>
 
                                 {selectedReport.technicalQuestions && selectedReport.technicalQuestions.length > 0 && (
-                                    <div>
-                                        <h4 style={{ margin: "0 0 8px 0", color: "#f8fafc", fontSize: "0.95rem" }}>Technical Questions ({selectedReport.technicalQuestions.length})</h4>
-                                        <ul style={{ margin: 0, paddingLeft: "20px", color: "#cbd5e1", fontSize: "0.85rem" }}>
-                                            {selectedReport.technicalQuestions.slice(0, 4).map((q, idx) => (
-                                                <li key={idx} style={{ marginBottom: "6px" }}>
+                                    <div className="report-detail-section">
+                                        <h4>Technical Questions ({selectedReport.technicalQuestions.length})</h4>
+                                        <ul className="detail-questions-list">
+                                            {selectedReport.technicalQuestions.slice(0, 5).map((q, idx) => (
+                                                <li key={idx}>
                                                     {typeof q === "string" ? q : q.question || JSON.stringify(q)}
                                                 </li>
                                             ))}
@@ -938,34 +890,24 @@ const AdminDashboard = () => {
                                 )}
 
                                 {selectedReport.resumeHtml && (
-                                    <div>
-                                        <h4 style={{ margin: "0 0 8px 0", color: "#f8fafc", fontSize: "0.95rem" }}>Tailored Resume HTML Preview</h4>
-                                        <div style={{
-                                            background: "rgba(255, 255, 255, 0.03)",
-                                            border: "1px solid rgba(255,255,255,0.06)",
-                                            padding: "14px",
-                                            borderRadius: "8px",
-                                            fontSize: "0.8rem",
-                                            color: "#94a3b8",
-                                            maxHeight: "120px",
-                                            overflowY: "auto",
-                                            fontFamily: "monospace"
-                                        }}>
-                                            {selectedReport.resumeHtml.slice(0, 500)}...
+                                    <div className="report-detail-section">
+                                        <h4>Tailored Resume Preview Snippet</h4>
+                                        <div className="code-snippet-box html-preview">
+                                            {selectedReport.resumeHtml.slice(0, 600)}...
                                         </div>
                                     </div>
                                 )}
                             </div>
                         ) : null}
 
-                        <div className="modal-actions">
-                            <button type="button" className="btn-cancel" onClick={() => setIsReportModalOpen(false)}>
+                        <div className="modal-footer">
+                            <button type="button" className="btn-ghost" onClick={() => setIsReportModalOpen(false)}>
                                 Close
                             </button>
                             {selectedReport && (
                                 <button
                                     type="button"
-                                    className="btn-action danger"
+                                    className="btn-danger"
                                     onClick={() => handleDeleteReport(selectedReport._id || selectedReport.id, selectedReport.title)}
                                 >
                                     Delete Report

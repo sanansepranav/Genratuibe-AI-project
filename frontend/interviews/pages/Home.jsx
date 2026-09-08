@@ -47,7 +47,7 @@ Responsibilities:
 - Troubleshoot and debug applications
 - Work with product managers to define requirements`;
 
-const SAMPLE_FRONTEND_RESUME = `pratham Sharma
+const SAMPLE_FRONTEND_RESUME = `Pratham Sharma
 Senior Frontend Engineer | React Specialist
 
 Email: pratham.sharma@example.com
@@ -109,6 +109,9 @@ const Home = () => {
 
     const [isGenerating, setIsGenerating] = useState(false);
     const [resumeMode, setResumeMode] = useState("text"); // "text" | "file"
+    const [activePreset, setActivePreset] = useState(null); // "fullstack" | "frontend" | "backend" | null
+    const [isDragging, setIsDragging] = useState(false);
+
     const [formData, setFormData] = useState({
         jobDescription: "",
         selfDescription: "",
@@ -136,11 +139,26 @@ const Home = () => {
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
+        setActivePreset(null);
     };
 
     const handleFileChange = (e) => {
         if (e.target.files && e.target.files[0]) {
             setFormData(prev => ({ ...prev, resumeFile: e.target.files[0] }));
+        }
+    };
+
+    const handleDropFile = (e) => {
+        e.preventDefault();
+        setIsDragging(false);
+        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+            const file = e.dataTransfer.files[0];
+            if (file.type === "application/pdf" || file.name.endsWith(".pdf")) {
+                setFormData(prev => ({ ...prev, resumeFile: file }));
+                setResumeMode("file");
+            } else {
+                setError("Please upload a valid PDF document.");
+            }
         }
     };
 
@@ -152,6 +170,7 @@ const Home = () => {
             resumeFile: null,
         });
         setResumeMode("text");
+        setActivePreset("fullstack");
         setError("");
     };
 
@@ -163,6 +182,7 @@ const Home = () => {
             resumeFile: null,
         });
         setResumeMode("text");
+        setActivePreset("frontend");
         setError("");
     };
 
@@ -174,6 +194,7 @@ const Home = () => {
             resumeFile: null,
         });
         setResumeMode("text");
+        setActivePreset("backend");
         setError("");
     };
 
@@ -184,6 +205,7 @@ const Home = () => {
             resumeText: "",
             resumeFile: null,
         });
+        setActivePreset(null);
         setError("");
     };
 
@@ -191,13 +213,13 @@ const Home = () => {
         setError("");
 
         if (!formData.jobDescription.trim()) {
-            return setError("Please enter the Job Description.");
+            return setError("Please enter the Target Job Description.");
         }
         if (!formData.selfDescription.trim()) {
-            return setError("Please enter your Self Description.");
+            return setError("Please enter your Self Description / Career Goals.");
         }
         if (resumeMode === "text" && !formData.resumeText.trim()) {
-            return setError("Please paste or type your Resume info, or upload a resume file.");
+            return setError("Please paste or type your Resume info, or upload a PDF file.");
         }
         if (resumeMode === "file" && !formData.resumeFile) {
             return setError("Please select a resume PDF file to upload, or switch to text mode.");
@@ -220,7 +242,7 @@ const Home = () => {
             navigate(`/interview/${interviewId}`);
         } catch (err) {
             console.error(err);
-            setError("Failed to generate report. Please verify connection and try again.");
+            setError(err.response?.data?.message || "Failed to generate report. Please verify connection and try again.");
         } finally {
             setIsGenerating(false);
         }
@@ -232,102 +254,147 @@ const Home = () => {
             <nav className="top-nav">
                 <div className="brand">
                     <span className="logo-icon">⚡</span>
-                    <strong>Interview AI & Resume Studio</strong>
+                    <strong className="brand-text">Interview AI & Resume Studio</strong>
                 </div>
+
                 <div className="user-section">
                     {user && (
                         <span className="user-greeting">
                             Welcome, <strong>{user.username || user.email}</strong>
                         </span>
                     )}
+
                     {(user?.role === "admin" || user?.username === "admin" || user?.email === "admin@interviewai.com") && (
-                        <Link to="/admin" style={{
-                            background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
-                            color: "#fff",
-                            textDecoration: "none",
-                            padding: "6px 14px",
-                            borderRadius: "8px",
-                            fontSize: "0.82rem",
-                            fontWeight: "700",
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "6px",
-                            boxShadow: "0 2px 8px rgba(99, 102, 241, 0.4)",
-                            transition: "all 0.2s ease"
-                        }}>
+                        <Link to="/admin" className="admin-nav-btn">
                             <span>🛡️ Admin Panel</span>
                         </Link>
                     )}
+
                     <button className="logout-btn" onClick={handleLogout}>
                         Logout
                     </button>
                 </div>
             </nav>
 
+            {/* Ambient Centered Header */}
             <header className="page-header">
-                <h1>AI Interview Plan & <span className="highlight">Tailored Resume Creator</span></h1>
-                <p>
-                    Provide your target job requirements and profile. Our system crafts an in-depth interview plan
-                    and generates a brand new, ATS-optimized professional resume tailored specifically to the role.
-                </p>
+                <div className="header-ambient-glow" />
+                <div className="header-content">
+                    <div className="header-badge">AI CAREER COPILOT</div>
+                    <h1>
+                        AI Interview Plan & <span className="highlight">Tailored Resume Creator</span>
+                    </h1>
+                    <p>
+                        Input your target job role and existing background. Our AI analyzes alignment, formulates personalized 
+                        interview questions, and crafts an ATS-optimized, high-impact resume tailored for the position.
+                    </p>
 
-                <div className="action-banner">
-                    <span className="preset-label">⚡ Quick Presets:</span>
-                    <button type="button" className="sample-btn" onClick={handleLoadSample}>
-                        ✨ Full Stack (Pranav)
-                    </button>
-                    <button type="button" className="sample-btn frontend-preset" onClick={handleLoadFrontendSample}>
-                        🎨 Frontend React (Pratham)
-                    </button>
-                    <button type="button" className="sample-btn backend-preset" onClick={handleLoadBackendSample}>
-                        ⚙️ Backend Cloud (Suyesh)
-                    </button>
-                    <button type="button" className="clear-btn" onClick={handleClear}>
-                        ✕ Clear All
-                    </button>
+                    {/* Interactive Quick Presets Chips */}
+                    <div className="action-banner">
+                        <span className="preset-label">⚡ Quick Presets:</span>
+                        <div className="presets-group">
+                            <button
+                                type="button"
+                                className={`preset-chip ${activePreset === "fullstack" ? "active" : ""}`}
+                                onClick={handleLoadSample}
+                            >
+                                <span className="chip-icon">✨</span>
+                                <span>Full Stack (Pranav)</span>
+                            </button>
+
+                            <button
+                                type="button"
+                                className={`preset-chip frontend-chip ${activePreset === "frontend" ? "active" : ""}`}
+                                onClick={handleLoadFrontendSample}
+                            >
+                                <span className="chip-icon">🎨</span>
+                                <span>Frontend React (Pratham)</span>
+                            </button>
+
+                            <button
+                                type="button"
+                                className={`preset-chip backend-chip ${activePreset === "backend" ? "active" : ""}`}
+                                onClick={handleLoadBackendSample}
+                            >
+                                <span className="chip-icon">⚙️</span>
+                                <span>Backend Cloud (Suyesh)</span>
+                            </button>
+
+                            <button
+                                type="button"
+                                className="clear-chip-btn"
+                                onClick={handleClear}
+                                title="Clear all input fields"
+                            >
+                                <span>✕ Clear All</span>
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </header>
 
+            {/* Error Notification */}
             {error && (
                 <div className="error-banner">
-                    {error}
+                    <span className="error-icon">⚠️</span>
+                    <span>{error}</span>
+                    <button className="dismiss-btn" onClick={() => setError("")}>✕</button>
                 </div>
             )}
 
-            <main className="home">
-                {/* Left Column: Job Description */}
-                <div className="left">
-                    <div className="field-header">
-                        <label htmlFor="jobDescription">Target Job Description *</label>
-                        <span className="field-hint">Paste the role requirements, responsibilities, and tech stack</span>
+            {/* Clean 2-Column Side-by-Side Grid */}
+            <main className="studio-form-grid">
+                {/* Column 1: Target Job Description */}
+                <div className="form-col left-col">
+                    <div className="col-header">
+                        <div className="col-title-wrap">
+                            <span className="col-num">1</span>
+                            <div>
+                                <h2>Target Job Description <span className="req">*</span></h2>
+                                <p className="col-desc">Paste the role requirements, responsibilities, and qualifications</p>
+                            </div>
+                        </div>
+                        <span className="char-badge">
+                            {formData.jobDescription.length} chars
+                        </span>
                     </div>
-                    <textarea 
-                        name="jobDescription" 
-                        id="jobDescription" 
-                        rows={16}
-                        value={formData.jobDescription} 
-                        onChange={handleChange} 
-                        placeholder="Paste job description here (responsibilities, required skills, experience level)..."
-                    />
+
+                    <div className="textarea-card">
+                        <textarea
+                            name="jobDescription"
+                            id="jobDescription"
+                            value={formData.jobDescription}
+                            onChange={handleChange}
+                            placeholder="Paste the target job description here (responsibilities, required tech stack, qualifications)..."
+                        />
+                    </div>
                 </div>
 
-                {/* Right Column: Resume & Profile */}
-                <div className="right">
-                    {/* Resume Input Mode Toggle */}
-                    <div className="resume-section">
-                        <div className="field-header">
-                            <label>Your Resume Info *</label>
-                            <div className="mode-toggle">
-                                <button 
-                                    type="button" 
-                                    className={resumeMode === "text" ? "active" : ""} 
+                {/* Column 2: Resume & Self Description */}
+                <div className="form-col right-col">
+                    {/* Resume Section */}
+                    <div className="resume-block">
+                        <div className="col-header">
+                            <div className="col-title-wrap">
+                                <span className="col-num">2</span>
+                                <div>
+                                    <h2>Your Resume Info <span className="req">*</span></h2>
+                                    <p className="col-desc">Provide your current resume data or upload your existing PDF</p>
+                                </div>
+                            </div>
+
+                            {/* Mode Toggle Chips */}
+                            <div className="mode-pill-toggle">
+                                <button
+                                    type="button"
+                                    className={`pill-btn ${resumeMode === "text" ? "active" : ""}`}
                                     onClick={() => setResumeMode("text")}
                                 >
-                                    ✏️ Paste / Edit Resume Text
+                                    ✏️ Paste Text
                                 </button>
-                                <button 
-                                    type="button" 
-                                    className={resumeMode === "file" ? "active" : ""} 
+                                <button
+                                    type="button"
+                                    className={`pill-btn ${resumeMode === "file" ? "active" : ""}`}
                                     onClick={() => setResumeMode("file")}
                                 >
                                     📁 Upload PDF
@@ -336,91 +403,132 @@ const Home = () => {
                         </div>
 
                         {resumeMode === "text" ? (
-                            <textarea
-                                name="resumeText"
-                                id="resumeText"
-                                rows={8}
-                                value={formData.resumeText}
-                                onChange={handleChange}
-                                placeholder="Paste or edit your current resume details (Name, contact info, summary, skills, experience, education)..."
-                            />
+                            <div className="textarea-card">
+                                <textarea
+                                    name="resumeText"
+                                    id="resumeText"
+                                    value={formData.resumeText}
+                                    onChange={handleChange}
+                                    placeholder="Paste or edit your resume text (Contact, Summary, Technical Skills, Work Experience, Education)..."
+                                />
+                            </div>
                         ) : (
-                            <div className="file-upload-box">
-                                <label className="file-label" htmlFor="resumeFile">
-                                    <span className="upload-icon">📄</span>
-                                    <span>{formData.resumeFile ? formData.resumeFile.name : "Click to select a Resume PDF file"}</span>
-                                    <small>Supports .pdf files up to 3MB</small>
+                            <div
+                                className={`file-dropzone ${isDragging ? "dragging" : ""} ${formData.resumeFile ? "has-file" : ""}`}
+                                onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+                                onDragLeave={() => setIsDragging(false)}
+                                onDrop={handleDropFile}
+                            >
+                                <label className="dropzone-label" htmlFor="resumeFile">
+                                    <div className="dropzone-icon">📄</div>
+                                    <div className="dropzone-text">
+                                        <strong>{formData.resumeFile ? formData.resumeFile.name : "Drag & drop your Resume PDF here"}</strong>
+                                        <span>or click to browse from your device</span>
+                                        <small className="format-hint">Supports PDF files up to 5 MB</small>
+                                    </div>
+                                    {formData.resumeFile && (
+                                        <span className="file-size-badge">
+                                            {(formData.resumeFile.size / 1024).toFixed(0)} KB ready
+                                        </span>
+                                    )}
                                 </label>
-                                <input 
-                                    hidden 
-                                    type="file" 
-                                    name="resumeFile" 
-                                    id="resumeFile" 
-                                    accept=".pdf" 
+                                <input
+                                    hidden
+                                    type="file"
+                                    name="resumeFile"
+                                    id="resumeFile"
+                                    accept=".pdf"
                                     onChange={handleFileChange}
                                 />
                             </div>
                         )}
                     </div>
 
-                    {/* Self Description */}
-                    <div className="input-group">
-                        <div className="field-header">
-                            <label htmlFor="selfDescription">Self Description / Career Goals *</label>
-                            <span className="field-hint">Your strengths, background, and specific career goals</span>
+                    {/* Self Description / Career Goals */}
+                    <div className="self-desc-block">
+                        <div className="col-header sub-header">
+                            <div>
+                                <h3>Self Description & Career Goals <span className="req">*</span></h3>
+                                <p className="col-desc">Highlight your top strengths, motivations, and target career direction</p>
+                            </div>
                         </div>
-                        <textarea 
-                            name="selfDescription" 
-                            id="selfDescription" 
-                            rows={4}
-                            value={formData.selfDescription} 
-                            onChange={handleChange} 
-                            placeholder="Describe your background, core strengths, and goals in a few sentences..."
-                        />
+                        <div className="textarea-card compact">
+                            <textarea
+                                name="selfDescription"
+                                id="selfDescription"
+                                rows={3}
+                                value={formData.selfDescription}
+                                onChange={handleChange}
+                                placeholder="Describe your background, core strengths, and goals in a few sentences..."
+                            />
+                        </div>
                     </div>
-
-                    <button 
-                        className="generate-btn primary-button" 
-                        disabled={isGenerating} 
-                        onClick={handleGenerate}
-                    >
-                        {isGenerating ? "⚡ Generating Analysis & Creating Tailored Resume..." : "🚀 Generate Interview Report & Create Tailored Resume"}
-                    </button>
                 </div>
             </main>
 
+            {/* High-Visibility Centered Primary Action Button */}
+            <div className="primary-action-container">
+                <button
+                    className="generate-plan-btn"
+                    disabled={isGenerating}
+                    onClick={handleGenerate}
+                >
+                    {isGenerating ? (
+                        <>
+                            <span className="spinner" />
+                            <span>Synthesizing Interview Strategy & Crafting Resume...</span>
+                        </>
+                    ) : (
+                        <>
+                            <span className="btn-icon">🚀</span>
+                            <span>Generate Plan & Resume</span>
+                            <span className="btn-arrow">→</span>
+                        </>
+                    )}
+                </button>
+                <p className="action-hint">Generates 15+ tailored interview questions, skill analysis, and a bespoke ATS resume.</p>
+            </div>
+
             {/* Recent Reports Section */}
             {recentReports && recentReports.length > 0 && (
-                <section className="recent-reports">
-                    <h2>📁 My Recent Interview Reports & Resumes</h2>
-                    <ul className="report-list">
+                <section className="recent-reports-container">
+                    <div className="section-header">
+                        <h2>📁 Your Previous Interview Plans & Resumes</h2>
+                        <span className="report-count-tag">{recentReports.length} reports</span>
+                    </div>
+
+                    <div className="reports-grid">
                         {recentReports.map(item => (
-                            <li 
-                                key={item._id} 
-                                className="report-item" 
-                                onClick={() => navigate(`/interview/${item._id}`)}
+                            <div
+                                key={item._id || item.id}
+                                className="report-card"
+                                onClick={() => navigate(`/interview/${item._id || item.id}`)}
                             >
-                                <div className="report-info">
-                                    <h3>{item.title || "Software Engineering Interview"}</h3>
-                                    <p className="report-snippet">
-                                        {item.jobDescription ? item.jobDescription.slice(0, 100) + "..." : "No job preview available"}
-                                    </p>
-                                    <span className="report-meta">
-                                        Generated on {new Date(item.createdAt).toLocaleDateString()}
+                                <div className="card-top">
+                                    <span className="report-badge">Analysis Complete</span>
+                                    <div className="score-pill">
+                                        <span className="score-num">{item.matchScore || "85"}%</span>
+                                        <span className="score-lbl">Match</span>
+                                    </div>
+                                </div>
+                                <h3>{item.title || "Customized Interview Report"}</h3>
+                                <p className="card-snippet">
+                                    {item.jobDescription ? item.jobDescription.slice(0, 110) + "..." : "Target job analysis ready to review."}
+                                </p>
+                                <div className="card-footer">
+                                    <span className="date-text">
+                                        {item.createdAt ? new Date(item.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : "Recently"}
                                     </span>
+                                    <span className="view-link">Open Plan & Resume →</span>
                                 </div>
-                                <div className="report-score-badge">
-                                    <span className="score-val">{item.matchScore || "85"}%</span>
-                                    <span className="score-lbl">Match</span>
-                                </div>
-                            </li>
+                            </div>
                         ))}
-                    </ul>
+                    </div>
                 </section>
             )}
 
             <footer className="page-footer">
-                <p>Terms & Conditions</p>
+                <p>AI Career Studio • Powered by Google Gemini AI & Supabase</p>
             </footer>
         </div>
     );
