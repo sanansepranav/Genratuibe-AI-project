@@ -26,12 +26,42 @@ const interviewRoutes = require("./routes/interview.routes");
 app.get("/", (req, res) => {
     res.send("Interview AI API is running");
 });
- 
+
+app.get("/api/health", (req, res) => {
+    const supabaseUrl = process.env.SUPABASE_URL || "";
+    const hasAnonKey = !!process.env.SUPABASE_ANON_KEY;
+    const hasServiceKey = !!process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const hasJwtSecret = !!process.env.JWT_SECRET;
+    const isUrlPlaceholder = supabaseUrl.includes("your-project-ref");
+    const isUrlValid = supabaseUrl.startsWith("https://") && supabaseUrl.includes(".supabase.co");
+
+    res.json({
+        status: "ok",
+        database: {
+            configured: !isUrlPlaceholder && (hasAnonKey || hasServiceKey) && isUrlValid,
+            hasSupabaseUrl: !!supabaseUrl,
+            isUrlPlaceholder,
+            isUrlValid,
+            hasAnonKey,
+            hasServiceKey,
+        },
+        auth: {
+            hasJwtSecret,
+        }
+    });
+});
+
 // all routes
 app.use("/api/auth", authRoutes);
 app.use("/api/interview", interviewRoutes);
 
-
-
+// Global JSON error handling middleware
+app.use((err, req, res, next) => {
+    console.error("API Unhandled Error:", err);
+    const status = err.status || err.statusCode || 500;
+    res.status(status).json({
+        message: err.message || "Internal server error"
+    });
+});
 
 module.exports = app;

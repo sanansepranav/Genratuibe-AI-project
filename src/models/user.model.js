@@ -27,7 +27,13 @@ module.exports = {
             .insert(user)
             .select()
             .single();
-        if (error) throw error;
+        if (error) {
+            if (error.code === "23505") {
+                const isEmail = (error.message || "").toLowerCase().includes("email") || (error.details || "").toLowerCase().includes("email");
+                throw new Error(isEmail ? "An account with this email already exists." : "An account with this username or email already exists.");
+            }
+            throw error;
+        }
         return normalizeUser(data);
     },
 

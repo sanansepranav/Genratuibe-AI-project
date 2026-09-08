@@ -8,6 +8,22 @@ export const useAuth = () => {
     const context = useContext(AuthContext);
     const { user, setUser, loading, setLoading } = context
 
+    function extractErrorMessage(err, defaultMessage) {
+        if (err.response?.data?.message) {
+            return err.response.data.message;
+        }
+        if (err.response?.status === 404) {
+            return "API endpoint not found (404). Please verify deployment.";
+        }
+        if (err.response?.status && err.response.status >= 500) {
+            return `Server error (${err.response.status}). Please verify database configuration.`;
+        }
+        if (err.message === "Network Error" || !err.response) {
+            return "Network error. Unable to reach the server. Please check your connection.";
+        }
+        return defaultMessage;
+    }
+
     const handleLogin = async ({ email, password }) => {
         setLoading(true);
         try {
@@ -16,7 +32,7 @@ export const useAuth = () => {
             return { success: true, user: data.user };
         } catch (err) {
             console.error(err);
-            const message = err.response?.data?.message || "Login failed. Please check your credentials.";
+            const message = extractErrorMessage(err, "Login failed. Please check your credentials.");
             return { success: false, error: message };
         } finally {
             setLoading(false);
@@ -31,7 +47,7 @@ export const useAuth = () => {
             return { success: true, user: data.user };
         } catch (err) {
             console.error(err);
-            const message = err.response?.data?.message || "Registration failed. Username or email may already exist.";
+            const message = extractErrorMessage(err, "Registration failed. Please check your details and try again.");
             return { success: false, error: message };
         } finally {
             setLoading(false);
