@@ -34,82 +34,106 @@ a:focus-visible {
     color: #8547a8;
 }
 
-.clerk-nav-header {
-    background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    padding: 10px 24px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-    position: sticky;
-    top: 0;
-    z-index: 1000;
+// Floating Global Auth Notification Toast
+.global-auth-toast {
+    position: fixed;
+    top: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 999999;
+    min-width: 360px;
+    max-width: 540px;
+    background: #0f172a;
+    border: 1px solid rgba(239, 68, 68, 0.45);
+    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.06);
+    border-radius: 12px;
+    padding: 12px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    color: #f8fafc;
+    animation: toastSlideDown 0.28s cubic-bezier(0.16, 1, 0.3, 1);
 
-    .clerk-nav-container {
-        max-width: 1440px;
-        margin: 0 auto;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    .clerk-nav-brand {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-
-        .clerk-badge {
-            background: rgba(99, 102, 241, 0.2);
-            border: 1px solid rgba(129, 140, 248, 0.35);
-            color: #a5b4fc;
-            padding: 4px 12px;
-            border-radius: 9999px;
-            font-size: 12.5px;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-        }
-    }
-
-    .clerk-nav-actions {
+    .toast-content {
         display: flex;
         align-items: center;
         gap: 12px;
 
-        .clerk-btn {
-            border: none;
-            cursor: pointer;
-            padding: 8px 16px;
-            border-radius: 8px;
-            font-size: 13.5px;
-            font-weight: 600;
-            transition: all 0.2s ease;
-
-            &-signin {
-                background: rgba(255, 255, 255, 0.1);
-                color: #e2e8f0;
-                border: 1px solid rgba(255, 255, 255, 0.18);
-
-                &:hover {
-                    background: rgba(255, 255, 255, 0.18);
-                    color: #ffffff;
-                }
-            }
-
-            &-signup {
-                background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
-                color: #ffffff;
-                box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
-
-                &:hover {
-                    transform: translateY(-1px);
-                    box-shadow: 0 6px 16px rgba(99, 102, 241, 0.45);
-                }
-            }
+        .toast-icon {
+            font-size: 1.35rem;
+            flex-shrink: 0;
         }
 
-        .clerk-user-badge {
+        .toast-text {
             display: flex;
-            align-items: center;
-            gap: 12px;
-            color: #e2e8f0;
+            flex-direction: column;
+            gap: 2px;
+
+            strong {
+                font-size: 0.88rem;
+                font-weight: 700;
+                color: #fca5a5;
+                letter-spacing: 0.02em;
+            }
+
+            p {
+                margin: 0;
+                font-size: 0.82rem;
+                color: #cbd5e1;
+            }
         }
+    }
+
+    .toast-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-shrink: 0;
+
+        .toast-login-btn {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: #ffffff;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4);
+
+            &:hover {
+                transform: translateY(-1px);
+                box-shadow: 0 4px 12px rgba(37, 99, 235, 0.6);
+            }
+        }
+
+        .toast-close-btn {
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            font-size: 0.95rem;
+            cursor: pointer;
+            padding: 4px 6px;
+            border-radius: 4px;
+            transition: color 0.15s ease;
+
+            &:hover {
+                color: #ffffff;
+                background: rgba(255, 255, 255, 0.1);
+            }
+        }
+    }
+}
+
+@keyframes toastSlideDown {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -20px) scale(0.96);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, 0) scale(1);
     }
 }

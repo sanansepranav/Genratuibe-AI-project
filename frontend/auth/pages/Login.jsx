@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react';
 import "../auth.form.scss";
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { SignInButton } from '@clerk/react';
-
 import SocialAuthButtons from '../components/SocialAuthButtons.jsx';
 
 const Login = () => {
@@ -53,10 +51,7 @@ const Login = () => {
     <main>
       <div className="form-container">
         <h1>Login</h1>
-        <p className="form-subtitle">Welcome back! Sign in to access your interview plans and resumes.</p>
-
-        {/* Social Authentication (Google, GitHub, LinkedIn) */}
-        <SocialAuthButtons mode="signIn" onError={(msg) => setErrorMessage(msg)} />
+        <p className="form-subtitle">Welcome back! Sign in to continue.</p>
 
         <div className="auth-divider">
           <span>or sign in with credentials</span>
@@ -101,6 +96,13 @@ const Login = () => {
         </form>
 
         <p>Don't have an account? <Link to="/register">Register</Link></p>
+
+        <div className="social-auth-footer">
+          <div className="auth-divider">
+            <span>or continue with</span>
+          </div>
+          <SocialAuthButtons mode="signIn" onError={(msg) => setErrorMessage(msg)} />
+        </div>
       </div>
     </main>
   );

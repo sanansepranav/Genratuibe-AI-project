@@ -40,7 +40,7 @@ export const SocialAuthButtons = ({ mode = "signIn", onError }) => {
         clerk.openSignIn();
       }
       if (onError) {
-        onError(err.errors?.[0]?.longMessage || err.message || "Opening Clerk authentication...");
+        onError(err.errors?.[0]?.longMessage || err.message || "Opening authentication...");
       }
     } finally {
       setLoadingProvider(null);

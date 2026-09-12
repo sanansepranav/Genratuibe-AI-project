@@ -8,6 +8,29 @@ const api = axios.create({
     withCredentials: true,
 });
 
+api.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        const url = error.config?.url || "";
+        const message = error.response?.data?.message || "";
+        // Don't show toast for passive background auth check
+        if (!url.includes("/api/auth/me")) {
+            if (
+                error.response?.status === 401 ||
+                message.toLowerCase().includes("authentication token is required") ||
+                message.toLowerCase().includes("unauthorized")
+            ) {
+                window.dispatchEvent(
+                    new CustomEvent("auth:token_required", {
+                        detail: { message: message || "Authentication token is required." },
+                    })
+                );
+            }
+        }
+        return Promise.reject(error);
+    }
+);
+
 export async function register({ username, email, password }) {
     try {
         const response = await api.post("/api/auth/register", {

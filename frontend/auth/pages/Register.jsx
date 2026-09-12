@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { SignUpButton } from '@clerk/react';
 import "../auth.form.scss";
 
 import SocialAuthButtons from '../components/SocialAuthButtons.jsx';
@@ -45,10 +44,7 @@ const Register = () => {
     <main>
       <div className="form-container">
         <h1>Register</h1>
-        <p className="form-subtitle">Create an account to start crafting ATS-friendly resumes and custom interview plans.</p>
-
-        {/* Social Authentication (Google, GitHub, LinkedIn) */}
-        <SocialAuthButtons mode="signUp" onError={(msg) => setErrorMessage(msg)} />
+        <p className="form-subtitle">Create an account to continue.</p>
 
         <div className="auth-divider">
           <span>or create standard account</span>
@@ -106,6 +102,13 @@ const Register = () => {
         </form>
 
         <p>Already have an account? <Link to="/login">Login</Link></p>
+
+        <div className="social-auth-footer">
+          <div className="auth-divider">
+            <span>or continue with</span>
+          </div>
+          <SocialAuthButtons mode="signUp" onError={(msg) => setErrorMessage(msg)} />
+        </div>
       </div>
     </main>
   );
