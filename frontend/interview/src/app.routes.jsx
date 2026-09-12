@@ -1,4 +1,5 @@
 import { createBrowserRouter } from "react-router-dom";
+import { AuthenticateWithRedirectCallback } from "@clerk/react";
 import Login from "@auth/pages/Login.jsx";
 import Register from "@auth/pages/Register.jsx";
 import Protected from "@auth/components/protected.jsx";
@@ -19,6 +20,10 @@ export const router = createBrowserRouter([
     {
         path: "/register",
         element: <Register/>,
+    },
+    {
+        path: "/sso-callback",
+        element: <AuthenticateWithRedirectCallback />,
     },
     {
         path: "/interview/:interviewId",

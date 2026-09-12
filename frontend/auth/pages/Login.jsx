@@ -4,6 +4,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { SignInButton } from '@clerk/react';
 
+import SocialAuthButtons from '../components/SocialAuthButtons.jsx';
+
 const Login = () => {
   const { user, loading, handleLogin } = useAuth();
   const navigate = useNavigate();
@@ -53,12 +55,8 @@ const Login = () => {
         <h1>Login</h1>
         <p className="form-subtitle">Welcome back! Sign in to access your interview plans and resumes.</p>
 
-        {/* Clerk Sign In Button */}
-        <SignInButton mode="modal">
-          <button type="button" className="btn-clerk">
-            <span>🔐</span> Continue with Clerk
-          </button>
-        </SignInButton>
+        {/* Social Authentication (Google, GitHub, LinkedIn) */}
+        <SocialAuthButtons mode="signIn" onError={(msg) => setErrorMessage(msg)} />
 
         <div className="auth-divider">
           <span>or sign in with credentials</span>

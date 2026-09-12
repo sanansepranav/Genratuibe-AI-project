@@ -4,6 +4,8 @@ import { useAuth } from '../hooks/useAuth';
 import { SignUpButton } from '@clerk/react';
 import "../auth.form.scss";
 
+import SocialAuthButtons from '../components/SocialAuthButtons.jsx';
+
 const Register = () => {
   const { user, loading, handleRegister } = useAuth();
   const navigate = useNavigate();
@@ -45,12 +47,8 @@ const Register = () => {
         <h1>Register</h1>
         <p className="form-subtitle">Create an account to start crafting ATS-friendly resumes and custom interview plans.</p>
 
-        {/* Clerk Sign Up Button */}
-        <SignUpButton mode="modal">
-          <button type="button" className="btn-clerk">
-            <span>✨</span> Sign Up with Clerk
-          </button>
-        </SignUpButton>
+        {/* Social Authentication (Google, GitHub, LinkedIn) */}
+        <SocialAuthButtons mode="signUp" onError={(msg) => setErrorMessage(msg)} />
 
         <div className="auth-divider">
           <span>or create standard account</span>

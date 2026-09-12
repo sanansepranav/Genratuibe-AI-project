@@ -79,6 +79,74 @@ main {
             }
         }
 
+        .social-auth-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.65rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .btn-social {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            padding: 0.72rem 1rem;
+            border-radius: 8px;
+            font-size: 0.92rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            color: #1e293b;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+
+            svg {
+                flex-shrink: 0;
+            }
+
+            &:hover:not(:disabled) {
+                background: #f8fafc;
+                border-color: #cbd5e1;
+                transform: translateY(-1px);
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.07);
+            }
+
+            &:active:not(:disabled) {
+                transform: translateY(0);
+            }
+
+            &:disabled {
+                opacity: 0.6;
+                cursor: not-allowed;
+            }
+
+            &.btn-google {
+                border-color: #e2e8f0;
+                &:hover:not(:disabled) {
+                    border-color: #cbd5e1;
+                }
+            }
+
+            &.btn-github {
+                border-color: #e2e8f0;
+                &:hover:not(:disabled) {
+                    background: #f8fafc;
+                    border-color: #cbd5e1;
+                }
+            }
+
+            &.btn-linkedin {
+                border-color: #e2e8f0;
+                &:hover:not(:disabled) {
+                    background: #f0f7ff;
+                    border-color: #bfdbfe;
+                }
+            }
+        }
+
         form {
             margin-top: 1rem;
         }
