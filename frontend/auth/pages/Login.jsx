@@ -1,16 +1,26 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import "../auth.form.scss";
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-//import { useNavigate } from 'react-router-dom'; 
+import { SignInButton } from '@clerk/react';
 
 const Login = () => {
-  const { loading, handleLogin } = useAuth();
+  const { user, loading, handleLogin } = useAuth();
   const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+
+  useEffect(() => {
+    if (user) {
+      if (user.role === "admin" || user.username === "admin" || email === "admin") {
+        navigate("/admin");
+      } else {
+        navigate("/");
+      }
+    }
+  }, [user, navigate, email]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -41,15 +51,30 @@ const Login = () => {
     <main>
       <div className="form-container">
         <h1>Login</h1>
+        <p className="form-subtitle">Welcome back! Sign in to access your interview plans and resumes.</p>
+
+        {/* Clerk Sign In Button */}
+        <SignInButton mode="modal">
+          <button type="button" className="btn-clerk">
+            <span>🔐</span> Continue with Clerk
+          </button>
+        </SignInButton>
+
+        <div className="auth-divider">
+          <span>or sign in with credentials</span>
+        </div>
+
         {errorMessage && (
           <div style={{ background: "#fee2e2", color: "#b91c1c", padding: "10px 14px", borderRadius: "6px", marginBottom: "16px", fontSize: "13.5px" }}>
             {errorMessage}
           </div>
         )}
+
         <form onSubmit={handleSubmit}>
           <div className="input-group">
             <label htmlFor="email">Email or Username</label>
             <input 
+              value={email}
               onChange={(e) => setEmail(e.target.value)}
               type="text" 
               id="email" 
@@ -65,8 +90,10 @@ const Login = () => {
               type="password" 
               id="password" 
               name="password" 
+              value={password}
               placeholder="Enter your password"
-              onChange={(e)=>{setPassword(e.target.value)}}
+              onChange={(e) => setPassword(e.target.value)}
+              required
             />
           </div>
 

@@ -46,15 +46,14 @@ $shadow-glow: 0 10px 25px -5px rgba(37, 99, 235, 0.35);
             gap: 8px;
 
             .logo-icon {
-                background: linear-gradient(135deg, #eff6ff, #dbeafe);
-                color: $primary;
                 width: 32px;
                 height: 32px;
                 border-radius: 8px;
+                object-fit: cover;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                font-size: 1.1rem;
+                border: 1px solid $border-light;
             }
 
             .brand-text {

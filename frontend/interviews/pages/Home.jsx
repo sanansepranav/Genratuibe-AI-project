@@ -253,7 +253,11 @@ const Home = () => {
             {/* Top Navigation Bar */}
             <nav className="top-nav">
                 <div className="brand">
-                    <span className="logo-icon">⚡</span>
+                    <img
+                        className="logo-icon"
+                        src="https://img.magnific.com/premium-photo/tech-evolution-generative-ai-logo_1106493-60018.jpg?semt=ais_hybrid&w=740&q=80"
+                        alt="Interview AI logo"
+                    />
                     <strong className="brand-text">Interview AI & Resume Studio</strong>
                 </div>
 

@@ -210,7 +210,11 @@ const AdminDashboard = () => {
             {/* 1. Slim Fixed Left Sidebar (240px) */}
             <aside className="admin-sidebar">
                 <div className="sidebar-brand">
-                    <div className="brand-shield-icon">⚡</div>
+                    <img
+                        className="brand-shield-icon"
+                        src="https://img.magnific.com/premium-photo/tech-evolution-generative-ai-logo_1106493-60018.jpg?semt=ais_hybrid&w=740&q=80"
+                        alt="Interview AI logo"
+                    />
                     <div className="brand-text-wrap">
                         <span className="brand-title">Interview AI</span>
                         <span className="brand-sub">Admin Console</span>

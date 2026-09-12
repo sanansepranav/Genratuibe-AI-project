@@ -310,7 +310,12 @@ const Interview = () => {
   if (loading) {
     return (
       <div className="interview-loading-view">
-        <div className="spinner">⚡</div>
+        <div className="spinner">
+          <img
+            src="https://img.magnific.com/premium-photo/tech-evolution-generative-ai-logo_1106493-60018.jpg?semt=ais_hybrid&w=740&q=80"
+            alt="Interview AI logo"
+          />
+        </div>
         <h2>Loading Interview Prep & Tailored Resume...</h2>
         <p>Analyzing profile against target job description</p>
       </div>

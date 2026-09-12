@@ -75,15 +75,25 @@ A full-stack AI-powered interview platform built with React, Vite, Express, Supa
    PORT=3000
    NODE_ENV=development
    FRONTEND_URL=http://localhost:5173
-   JWT_SECRET=replace-with-a-long-random-secret
+   JWT_SECRET=replace-with-a-random-secret-at-least-32-characters-long
    SUPABASE_URL=https://your-project.supabase.co
    SUPABASE_ANON_KEY=your-supabase-anon-key
    SUPABASE_SERVICE_ROLE_KEY=your-supabase-service-role-key
    GOOGLE_GENAI_API_KEY=your-google-genai-api-key
+   CLERK_PUBLISHABLE_KEY=your-clerk-publishable-key
+   VITE_CLERK_PUBLISHABLE_KEY=your-clerk-publishable-key
    ```
 
 5. Apply the database schema from [`supabase/schema.sql`](supabase/schema.sql) to your Supabase project.
 
+For production SEO, create `frontend/interview/.env.production` locally or configure these variables in your deployment provider:
+
+```env
+VITE_SITE_URL=https://your-production-domain.com
+VITE_GOOGLE_SITE_VERIFICATION=your-search-console-token
+```
+
+`VITE_SITE_URL` generates the canonical URL, Open Graph URL, `robots.txt`, and sitemap. `VITE_GOOGLE_SITE_VERIFICATION` injects the Google Search Console verification tag when provided. Never commit the verification token to this repository. After deployment, submit `https://your-production-domain.com/sitemap.xml` in Google Search Console.
 ## Running Locally
 
 Start the backend from the project root:

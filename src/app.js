@@ -1,61 +1,61 @@
 const express = require("express");
 const app = express();
 const cors = require("cors");
+const helmet = require("helmet");
 
-app.use(express.json());
+app.disable("x-powered-by");
+app.use(helmet());
+app.use(express.json({ limit: "100kb" }));
 app.use(require('cookie-parser')());
+
+const path = require("path");
+const fs = require("fs");
 
 const allowedOrigins = [
     "http://localhost:5173",
     "http://localhost:5174",
+    "http://localhost:5175",
+    "http://localhost:3000",
     process.env.FRONTEND_URL,
 ].filter(Boolean);
+
 app.use(cors({
     origin: (origin, callback) => {
-        if (!origin || allowedOrigins.includes(origin) || origin.endsWith(".vercel.app")) {
+        if (!origin || allowedOrigins.includes(origin) || /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
             return callback(null, true);
         }
         return callback(new Error("CORS policy does not allow access from this origin."));
     },
-    credentials: true,}));
+    credentials: true,
+}));
 
 // require all routes here
 const authRoutes = require("./routes/auth.routes");
 const interviewRoutes = require("./routes/interview.routes");
 const adminRoutes = require("../routes/admin.routes");
 
-app.get("/", (req, res) => {
-    res.send("Interview AI API is running");
-});
-
 app.get("/api/health", (req, res) => {
-    const supabaseUrl = process.env.SUPABASE_URL || "";
-    const hasAnonKey = !!process.env.SUPABASE_ANON_KEY;
-    const hasServiceKey = !!process.env.SUPABASE_SERVICE_ROLE_KEY;
-    const hasJwtSecret = !!process.env.JWT_SECRET;
-    const isUrlPlaceholder = supabaseUrl.includes("your-project-ref");
-    const isUrlValid = supabaseUrl.startsWith("https://") && supabaseUrl.includes(".supabase.co");
-
-    res.json({
-        status: "ok",
-        database: {
-            configured: !isUrlPlaceholder && (hasAnonKey || hasServiceKey) && isUrlValid,
-            hasSupabaseUrl: !!supabaseUrl,
-            isUrlPlaceholder,
-            isUrlValid,
-            hasAnonKey,
-            hasServiceKey,
-        },
-        auth: {
-            hasJwtSecret,
-        }
-    });
+    res.json({ status: "ok" });
 });
 
 // all routes
 app.use("/api/auth", authRoutes);
 app.use("/api/interview", interviewRoutes);
 app.use("/api/admin", adminRoutes);
+
+// Serve static frontend in production or when dist build is present
+const distPath = path.join(__dirname, "../dist");
+if (fs.existsSync(distPath)) {
+    app.use(express.static(distPath));
+    app.use((req, res, next) => {
+        if (req.path.startsWith("/api")) return next();
+        res.sendFile(path.join(distPath, "index.html"));
+    });
+} else {
+    app.get("/", (req, res) => {
+        res.send("Interview AI API is running");
+    });
+}
 
 // Global JSON error handling middleware
 app.use((err, req, res, next) => {

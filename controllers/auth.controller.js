@@ -1,12 +1,14 @@
 const userModel = require("../src/models/user.model")
 const bcrypt = require("bcryptjs")
-const jwt = require("jsonwebtoken")
 const tokenBlacklistModel = require("../src/models/blacklist.model")
+const { signAuthToken } = require("../src/config/security")
 
 const authCookieOptions = {
     httpOnly: true,
     sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
     secure: process.env.NODE_ENV === "production",
+    maxAge: 24 * 60 * 60 * 1000,
+    path: "/",
 };
 
 /**
@@ -20,11 +22,13 @@ const authCookieOptions = {
 
 async function registerUserController(req, res) {
     try {
-        const { username, email, password } = req.body;
+        const username = (req.body.username || "").trim();
+        const email = (req.body.email || "").trim().toLowerCase();
+        const password = req.body.password || "";
 
-        if (!username || !email || !password) {
+        if (!username || !email || password.length < 8) {
             return res.status(400).json({
-                message: "Please provide username, email and password"
+            message: "Username and email are required. Password must be at least 8 characters."
             });
         }
 
@@ -52,11 +56,8 @@ async function registerUserController(req, res) {
         });
 
         const userRole = user.role || (user.username === "admin" || user.email === "admin@interviewai.com" ? "admin" : "user");
-        const jwtSecret = process.env.JWT_SECRET || "default_jwt_secret_dev_key_fallback";
-        const token = jwt.sign(
+        const token = signAuthToken(
             { id: user._id, username: user.username, email: user.email, role: userRole },
-            jwtSecret,
-            { expiresIn: "1d" }
         );
 
         res.cookie("token", token, authCookieOptions);
@@ -119,11 +120,8 @@ async function loginUserController(req, res) {
         }
 
         const userRole = user.role || (user.username === "admin" || user.email === "admin@interviewai.com" ? "admin" : "user");
-        const jwtSecret = process.env.JWT_SECRET || "default_jwt_secret_dev_key_fallback";
-        const token = jwt.sign(
+        const token = signAuthToken(
             { id: user._id, username: user.username, email: user.email, role: userRole },
-            jwtSecret,
-            { expiresIn: "1d" }
         );
 
         res.cookie("token", token, authCookieOptions);

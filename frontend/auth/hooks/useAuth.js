@@ -2,11 +2,13 @@ import { useContext } from "react";
 import { AuthContext } from "../auth.context";
 import { login, register, logout, getMe } from "../auth.api";
 import { generateResumePdf } from "../../interviews/services/interview.api";
+import { useClerk } from "@clerk/react";
 
 export const useAuth = () => {
 
     const context = useContext(AuthContext);
-    const { user, setUser, loading, setLoading } = context
+    const { user, setUser, loading, setLoading } = context;
+    const { signOut } = useClerk();
 
     function extractErrorMessage(err, defaultMessage) {
         if (err.response?.data?.message) {
@@ -56,15 +58,20 @@ export const useAuth = () => {
 
     const handleLogout = async () => {
         setLoading(true);
-          try {
-            const data = await logout()
-            setUser(null)
-        } catch(err) {
-            console.error(err)
-        } finally {
-            setLoading(false)
+        try {
+            await logout();
+        } catch (err) {
+            console.error(err);
         }
-    }
+        try {
+            if (signOut) await signOut();
+        } catch (err) {
+            console.warn("Clerk sign-out error:", err.message);
+        } finally {
+            setUser(null);
+            setLoading(false);
+        }
+    };
 
     const getResumePdf = async (interviewReportId) => {
         setLoading(true)

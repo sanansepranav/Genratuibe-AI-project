@@ -32,5 +32,84 @@ a:focus-visible {
 
 .highlight{
     color: #8547a8;
-    
+}
+
+.clerk-nav-header {
+    background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 10px 24px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+
+    .clerk-nav-container {
+        max-width: 1440px;
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .clerk-nav-brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+
+        .clerk-badge {
+            background: rgba(99, 102, 241, 0.2);
+            border: 1px solid rgba(129, 140, 248, 0.35);
+            color: #a5b4fc;
+            padding: 4px 12px;
+            border-radius: 9999px;
+            font-size: 12.5px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+    }
+
+    .clerk-nav-actions {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+
+        .clerk-btn {
+            border: none;
+            cursor: pointer;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 13.5px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+
+            &-signin {
+                background: rgba(255, 255, 255, 0.1);
+                color: #e2e8f0;
+                border: 1px solid rgba(255, 255, 255, 0.18);
+
+                &:hover {
+                    background: rgba(255, 255, 255, 0.18);
+                    color: #ffffff;
+                }
+            }
+
+            &-signup {
+                background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+                color: #ffffff;
+                box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
+
+                &:hover {
+                    transform: translateY(-1px);
+                    box-shadow: 0 6px 16px rgba(99, 102, 241, 0.45);
+                }
+            }
+        }
+
+        .clerk-user-badge {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #e2e8f0;
+        }
+    }
 }

@@ -1,7 +1,15 @@
 const express = require("express");
 const authController = require("../../controllers/auth.controller");
+const rateLimit = require("express-rate-limit");
 
 const authRoutes = express.Router();
+const authRateLimit = rateLimit({
+	windowMs: 15 * 60 * 1000,
+	limit: 10,
+	standardHeaders: "draft-8",
+	legacyHeaders: false,
+	message: { message: "Too many authentication attempts. Please try again later." },
+});
 
 /**
  *  @route POST /api/auth/register
@@ -9,7 +17,7 @@ const authRoutes = express.Router();
  *  @access Public
  */
 
-authRoutes.post("/register", authController.registerUserController);
+authRoutes.post("/register", authRateLimit, authController.registerUserController);
 
 
 /**
@@ -17,7 +25,7 @@ authRoutes.post("/register", authController.registerUserController);
  *  @description login User with email and password
  *  @access Public
  */
-authRoutes.post("/login", authController.loginUserController)
+authRoutes.post("/login", authRateLimit, authController.loginUserController)
 
 /**
  * @router GET /api/auth/me

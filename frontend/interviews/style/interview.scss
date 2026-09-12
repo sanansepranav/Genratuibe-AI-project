@@ -838,6 +838,12 @@ $shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
         padding: 2rem;
 
         .spinner {
+            img {
+                width: 56px;
+                height: 56px;
+                border-radius: 14px;
+                object-fit: cover;
+            }
             font-size: 3rem;
             margin-bottom: 1rem;
             animation: pulse 1.5s infinite;
