@@ -32,7 +32,7 @@ authRoutes.post("/login", authRateLimit, authController.loginUserController)
  * @description get current logged in user
  * @access Private
 */
-authRoutes.get("/me", require("../../middleware/auth.middleware"), authController.getMeController)
+authRoutes.get("/me", require("../../middleware/auth.middleware").optionalAuthMiddleware, authController.getMeController)
 
 /**
  * @router GET /api/auth/logout

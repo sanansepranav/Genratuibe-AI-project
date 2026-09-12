@@ -70,7 +70,9 @@ export async function getMe() {
         const response = await api.get("/api/auth/me");
         return response.data;
     } catch (err) {
-        console.error("Error fetching current user:", err);
+        if (err.response?.status !== 401) {
+            console.error("Error fetching current user:", err);
+        }
         throw err;
     }
 }

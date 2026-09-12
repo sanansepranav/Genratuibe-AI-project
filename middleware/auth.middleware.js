@@ -39,4 +39,15 @@ async function authMiddleware(req, res, next) {
     }
 }
 
+async function optionalAuthMiddleware(req, res, next) {
+    const token = req.cookies?.token || req.headers?.authorization?.split(" ")[1];
+
+    if (!token) {
+        return next();
+    }
+
+    return authMiddleware(req, res, next);
+}
+
 module.exports = authMiddleware;
+module.exports.optionalAuthMiddleware = optionalAuthMiddleware;

@@ -144,6 +144,10 @@ async function loginUserController(req, res) {
 
 async function getMeController(req, res) {
     try {
+        if (!req.user) {
+            return res.status(200).json({ user: null });
+        }
+
         const user = await userModel.findById(req.user.id).select("-password");
 
         if (!user) {
