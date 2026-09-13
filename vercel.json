@@ -19,16 +19,11 @@
       "dest": "/api/index.js"
     },
     {
-      "src": "/assets/(.*)",
-      "dest": "/frontend/interview/dist/assets/$1"
+      "handle": "filesystem"
     },
     {
       "src": "/(.*)",
-      "dest": "/frontend/interview/dist/$1"
-    },
-    {
-      "src": "/",
-      "dest": "/frontend/interview/dist/index.html"
+      "dest": "/index.html"
     }
   ]
 }

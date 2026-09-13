@@ -6,13 +6,18 @@ const mongoose = require("mongoose");
 app.use(express.json());
 app.use(require('cookie-parser')());
 
-const allowedOrigins = ["http://localhost:5173", "http://localhost:5174"];
+const allowedOrigins = new Set([
+    "http://localhost:5173",
+    "http://localhost:5174",
+    process.env.FRONTEND_URL,
+    ...(process.env.CORS_ORIGINS || "").split(",").map((origin) => origin.trim()),
+].filter(Boolean));
 app.use(cors({
     origin: (origin, callback) => {
-        if (!origin || allowedOrigins.includes(origin)) {
+        if (!origin || allowedOrigins.has(origin)) {
             return callback(null, true);
         }
-        return callback(new Error("CORS policy does not allow access from this origin."));
+        return callback(null, false);
     },
     credentials: true,}));
 
