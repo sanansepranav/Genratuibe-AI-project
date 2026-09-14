@@ -8,6 +8,29 @@ const api = axios.create({
     withCredentials: true,
 });
 
+api.interceptors.request.use(async (config) => {
+    if (typeof window !== "undefined" && window.Clerk?.session) {
+        try {
+            const clerkToken = await window.Clerk.session.getToken();
+            if (clerkToken) {
+                config.headers.Authorization = `Bearer ${clerkToken}`;
+                return config;
+            }
+        } catch {
+            // fallback
+        }
+    }
+
+    if (typeof window !== "undefined") {
+        const storedToken = localStorage.getItem("auth_token");
+        if (storedToken && !config.headers.Authorization) {
+            config.headers.Authorization = `Bearer ${storedToken}`;
+        }
+    }
+
+    return config;
+});
+
 api.interceptors.response.use(
     (response) => response,
     (error) => {

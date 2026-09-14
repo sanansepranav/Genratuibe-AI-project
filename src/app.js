@@ -4,29 +4,86 @@ const cors = require("cors");
 const helmet = require("helmet");
 
 app.disable("x-powered-by");
-app.use(helmet());
+app.use(helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+    crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" },
+}));
 app.use(express.json({ limit: "100kb" }));
 app.use(require('cookie-parser')());
 
 const path = require("path");
 const fs = require("fs");
 
-const allowedOrigins = [
+// Compile configured and standard allowed origins
+const envOrigins = [
+    process.env.FRONTEND_URL,
+    process.env.CLIENT_URL,
+    process.env.ALLOWED_ORIGINS,
+]
+    .filter(Boolean)
+    .flatMap((val) => val.split(","))
+    .map((url) => url.trim().replace(/\/+$/, ""))
+    .filter(Boolean);
+
+const defaultOrigins = [
     "http://localhost:5173",
     "http://localhost:5174",
     "http://localhost:5175",
     "http://localhost:3000",
-    process.env.FRONTEND_URL,
-].filter(Boolean);
+    "http://localhost:4173",
+];
+
+const allowedOriginsSet = new Set([...defaultOrigins, ...envOrigins]);
+
+const isOriginAllowed = (origin) => {
+    // Allow non-browser requests (e.g., server-to-server, curl, mobile apps, Postman)
+    if (!origin) return true;
+
+    const normalized = origin.trim().replace(/\/+$/, "");
+
+    // Check exact matches in configured list
+    if (allowedOriginsSet.has(normalized)) return true;
+
+    // Check localhost & 127.0.0.1 on any port with http or https
+    if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(normalized)) return true;
+
+    // Check private LAN IPs (e.g. 192.168.x.x, 10.x.x.x, 172.16-31.x.x) for local testing
+    if (/^https?:\/\/(192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+|172\.(1[6-9]|2\d|3[0-1])\.\d+\.\d+)(:\d+)?$/.test(normalized)) return true;
+
+    // Check Vercel deployments (production domain, branch previews, e.g. *.vercel.app)
+    if (/^https:\/\/([a-zA-Z0-9_-]+\.)*vercel\.app$/.test(normalized)) return true;
+
+    // Check Netlify deployments (*.netlify.app)
+    if (/^https:\/\/([a-zA-Z0-9_-]+\.)*netlify\.app$/.test(normalized)) return true;
+
+    // Check Render deployments (*.onrender.com)
+    if (/^https:\/\/([a-zA-Z0-9_-]+\.)*onrender\.com$/.test(normalized)) return true;
+
+    // Check Railway deployments (*.railway.app)
+    if (/^https:\/\/([a-zA-Z0-9_-]+\.)*railway\.app$/.test(normalized)) return true;
+
+    // Allow all if explicitly configured or non-production environment
+    if (process.env.ALLOW_ALL_ORIGINS === "true" || process.env.ALLOWED_ORIGINS === "*" || process.env.NODE_ENV !== "production") {
+        return true;
+    }
+
+    return false;
+};
 
 app.use(cors({
     origin: (origin, callback) => {
-        if (!origin || allowedOrigins.includes(origin) || /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
+        if (isOriginAllowed(origin)) {
             return callback(null, true);
         }
-        return callback(new Error("CORS policy does not allow access from this origin."));
+        // Note: Do not pass new Error() to callback as it triggers Express 500 error handler.
+        // callback(null, false) standardly disallows CORS without throwing server errors.
+        return callback(null, false);
     },
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept", "Origin"],
+    exposedHeaders: ["Set-Cookie"],
+    maxAge: 86400, // Cache preflight for 24 hours
 }));
 
 // require all routes here
