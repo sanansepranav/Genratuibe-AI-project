@@ -17,6 +17,7 @@ dist/
 dist-ssr/
 build/
 *.local
+data/
 
 # System and editor files
 .DS_Store

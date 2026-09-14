@@ -3,6 +3,7 @@ const app = express();
 const cors = require("cors");
 const helmet = require("helmet");
 
+app.set("trust proxy", 1);
 app.disable("x-powered-by");
 app.use(helmet({
     crossOriginResourcePolicy: { policy: "cross-origin" },

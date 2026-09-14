@@ -51,8 +51,41 @@ const Register = () => {
         </div>
 
         {errorMessage && (
-          <div style={{ background: "#fee2e2", color: "#b91c1c", padding: "10px 14px", borderRadius: "6px", marginBottom: "16px", fontSize: "13.5px" }}>
-            {errorMessage}
+          <div style={{ background: "#fee2e2", color: "#b91c1c", padding: "12px 14px", borderRadius: "8px", marginBottom: "16px", fontSize: "13.5px", lineHeight: "1.45" }}>
+            <span>{errorMessage}</span>
+            {errorMessage.toLowerCase().includes("already exists") && (
+              <div style={{ marginTop: "6px" }}>
+                <Link to="/login" style={{ color: "#991b1b", fontWeight: "700", textDecoration: "underline" }}>
+                  Click here to Login with your password →
+                </Link>
+              </div>
+            )}
+            {errorMessage.includes("'") && errorMessage.includes("Would you like to use") && (
+              <div style={{ marginTop: "6px" }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const match = errorMessage.match(/'([^']+)'/);
+                    if (match && match[1]) {
+                      setUsername(match[1]);
+                      setErrorMessage("");
+                    }
+                  }}
+                  style={{
+                    background: "#b91c1c",
+                    color: "#ffffff",
+                    border: "none",
+                    borderRadius: "4px",
+                    padding: "4px 8px",
+                    fontSize: "12px",
+                    cursor: "pointer",
+                    fontWeight: "600",
+                  }}
+                >
+                  Use suggested username
+                </button>
+              </div>
+            )}
           </div>
         )}
         <form onSubmit={handleSubmit}>

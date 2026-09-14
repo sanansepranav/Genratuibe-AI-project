@@ -4,11 +4,12 @@ const rateLimit = require("express-rate-limit");
 
 const authRoutes = express.Router();
 const authRateLimit = rateLimit({
-	windowMs: 15 * 60 * 1000,
-	limit: 10,
+	windowMs: 5 * 60 * 1000,
+	limit: process.env.NODE_ENV === "production" ? 100 : 500,
 	standardHeaders: "draft-8",
 	legacyHeaders: false,
-	message: { message: "Too many authentication attempts. Please try again later." },
+	skipSuccessfulRequests: true,
+	message: { message: "Too many authentication attempts. Please try again in a few moments." },
 });
 
 /**

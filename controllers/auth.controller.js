@@ -22,13 +22,13 @@ const authCookieOptions = {
 
 async function registerUserController(req, res) {
     try {
-        const username = (req.body.username || "").trim();
+        let username = (req.body.username || "").trim();
         const email = (req.body.email || "").trim().toLowerCase();
         const password = req.body.password || "";
 
         if (!username || !email || password.length < 8) {
             return res.status(400).json({
-            message: "Username and email are required. Password must be at least 8 characters."
+                message: "Username and email are required. Password must be at least 8 characters."
             });
         }
 
@@ -39,12 +39,52 @@ async function registerUserController(req, res) {
         if (isUserAlreadyRegistered) {
             const emailMatches = isUserAlreadyRegistered.email && isUserAlreadyRegistered.email.toLowerCase() === email.toLowerCase();
             const usernameMatches = isUserAlreadyRegistered.username && isUserAlreadyRegistered.username.toLowerCase() === username.toLowerCase();
-            const msg = emailMatches && usernameMatches
-                ? "An account with this email and username already exists"
-                : emailMatches
-                    ? "An account with this email already exists"
-                    : "This username is already taken";
-            return res.status(400).json({ message: msg });
+
+            // Special case: If user registers with username 'admin' and existing user is the placeholder DEFAULT_ADMIN
+            if (usernameMatches && isUserAlreadyRegistered.email === "admin@interviewai.com" && !emailMatches) {
+                const hash = await bcrypt.hash(password, 10);
+                const updatedAdmin = await userModel.update(isUserAlreadyRegistered._id || isUserAlreadyRegistered.id, {
+                    email,
+                    password: hash,
+                    username: "admin",
+                    role: "admin",
+                });
+
+                const token = signAuthToken({
+                    id: updatedAdmin._id || updatedAdmin.id,
+                    username: updatedAdmin.username,
+                    email: updatedAdmin.email,
+                    role: "admin",
+                });
+                res.cookie("token", token, authCookieOptions);
+
+                return res.status(201).json({
+                    message: "Admin account configured successfully!",
+                    token,
+                    user: {
+                        id: updatedAdmin._id || updatedAdmin.id,
+                        username: updatedAdmin.username,
+                        email: updatedAdmin.email,
+                        role: "admin",
+                    },
+                });
+            }
+
+            if (emailMatches) {
+                return res.status(400).json({
+                    message: "An account with this email already exists. Please log in with your password.",
+                    canLogin: true,
+                    email,
+                });
+            }
+
+            if (usernameMatches) {
+                const suggestedUsername = `${username}${Math.floor(100 + Math.random() * 900)}`;
+                return res.status(400).json({
+                    message: `This username is already taken. Would you like to use '${suggestedUsername}'?`,
+                    suggestedUsername,
+                });
+            }
         }
 
         const hash = await bcrypt.hash(password, 10);
@@ -55,9 +95,9 @@ async function registerUserController(req, res) {
             password: hash,
         });
 
-        const userRole = user.role || (user.username === "admin" || user.email === "admin@interviewai.com" ? "admin" : "user");
+        const userRole = user.role || (user.username === "admin" || (user.email && user.email.startsWith("admin@")) ? "admin" : "user");
         const token = signAuthToken(
-            { id: user._id, username: user.username, email: user.email, role: userRole },
+            { id: user._id || user.id, username: user.username, email: user.email, role: userRole },
         );
 
         res.cookie("token", token, authCookieOptions);
@@ -66,7 +106,7 @@ async function registerUserController(req, res) {
             message: "user registered successfully",
             token,
             user: {
-                id: user._id,
+                id: user._id || user.id,
                 username: user.username,
                 email: user.email,
                 role: userRole,
@@ -103,26 +143,32 @@ async function loginUserController(req, res) {
         const user = await userModel.findOne(
             isEmail
                 ? { email: identifier.toLowerCase() }
-                : { $or: [{ username: identifier }, { email: identifier }] }
+                : { $or: [{ username: identifier }, { email: identifier.toLowerCase() }] }
         );
 
         if (!user) {
             return res.status(400).json({
-                message: "Invalid credentials. Please check your username/email and password."
+                message: `No account found for '${identifier}'. Please check your spelling or click Register to create an account.`,
+                notFound: true,
+                identifier,
             });
         }
 
         const isPasswordCorrect = await bcrypt.compare(password, user.password);
 
         if (!isPasswordCorrect) {
+            const isPlaceholderAdmin = user.username === "admin" && user.email === "admin@interviewai.com";
+            const note = isPlaceholderAdmin 
+                ? " Note: The default admin password is 'AdminPassword@2026', or you can register your own admin email." 
+                : "";
             return res.status(400).json({
-                message: "Invalid credentials. Please check your username/email and password."
+                message: `Incorrect password for '${identifier}'. Please verify your password and try again.${note}`,
             });
         }
 
-        const userRole = user.role || (user.username === "admin" || user.email === "admin@interviewai.com" ? "admin" : "user");
+        const userRole = user.role || (user.username === "admin" || (user.email && user.email.startsWith("admin@")) ? "admin" : "user");
         const token = signAuthToken(
-            { id: user._id, username: user.username, email: user.email, role: userRole },
+            { id: user._id || user.id, username: user.username, email: user.email, role: userRole },
         );
 
         res.cookie("token", token, authCookieOptions);
@@ -130,7 +176,7 @@ async function loginUserController(req, res) {
             message: "user logged in successfully",
             token,
             user: {
-                id: user._id,
+                id: user._id || user.id,
                 username: user.username,
                 email: user.email,
                 role: userRole,

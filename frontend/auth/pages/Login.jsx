@@ -58,8 +58,15 @@ const Login = () => {
         </div>
 
         {errorMessage && (
-          <div style={{ background: "#fee2e2", color: "#b91c1c", padding: "10px 14px", borderRadius: "6px", marginBottom: "16px", fontSize: "13.5px" }}>
-            {errorMessage}
+          <div style={{ background: "#fee2e2", color: "#b91c1c", padding: "12px 14px", borderRadius: "8px", marginBottom: "16px", fontSize: "13.5px", lineHeight: "1.45" }}>
+            <span>{errorMessage}</span>
+            {errorMessage.toLowerCase().includes("register") && (
+              <div style={{ marginTop: "6px" }}>
+                <Link to="/register" style={{ color: "#991b1b", fontWeight: "700", textDecoration: "underline" }}>
+                  Click here to Register this account →
+                </Link>
+              </div>
+            )}
           </div>
         )}
 

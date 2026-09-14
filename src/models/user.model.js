@@ -17,17 +17,37 @@ const DEFAULT_ADMIN = {
     created_at: new Date().toISOString(),
 };
 
-const FALLBACK_FILE = path.join(os.tmpdir(), "interview_ai_users_fallback.json");
+const PROJECT_DATA_DIR = path.join(__dirname, "../../data");
+const PERSISTENT_FILE = path.join(PROJECT_DATA_DIR, "users_fallback.json");
+const TMP_FILE = path.join(os.tmpdir(), "interview_ai_users_fallback.json");
+
+function getStorageFile() {
+    try {
+        if (!fs.existsSync(PROJECT_DATA_DIR)) {
+            fs.mkdirSync(PROJECT_DATA_DIR, { recursive: true });
+        }
+        return PERSISTENT_FILE;
+    } catch {
+        return TMP_FILE;
+    }
+}
 
 function loadFallbackUsers() {
+    const file = getStorageFile();
     try {
-        if (fs.existsSync(FALLBACK_FILE)) {
-            const data = JSON.parse(fs.readFileSync(FALLBACK_FILE, "utf8"));
+        if (fs.existsSync(file)) {
+            const data = JSON.parse(fs.readFileSync(file, "utf8"));
             if (Array.isArray(data) && data.length > 0) {
-                // Ensure admin is always present
-                if (!data.some(u => u.username === "admin" || u.email === "admin@interviewai.com")) {
+                const hasAdmin = data.some(u => u.role === "admin" || u.username === "admin" || (u.email && u.email.startsWith("admin@")));
+                if (!hasAdmin) {
                     data.unshift(DEFAULT_ADMIN);
                 }
+                return data;
+            }
+        } else if (fs.existsSync(TMP_FILE)) {
+            const data = JSON.parse(fs.readFileSync(TMP_FILE, "utf8"));
+            if (Array.isArray(data) && data.length > 0) {
+                saveFallbackUsers(data);
                 return data;
             }
         }
@@ -39,20 +59,35 @@ function loadFallbackUsers() {
 
 function saveFallbackUsers(users) {
     try {
-        fs.writeFileSync(FALLBACK_FILE, JSON.stringify(users, null, 2), "utf8");
+        const file = getStorageFile();
+        fs.writeFileSync(file, JSON.stringify(users, null, 2), "utf8");
     } catch (err) {
-        console.warn("Could not write fallback users file:", err.message);
+        try {
+            fs.writeFileSync(TMP_FILE, JSON.stringify(users, null, 2), "utf8");
+        } catch {}
     }
 }
 
 let fallbackUsers = loadFallbackUsers();
+
+function extractOrConditions(queryOr) {
+    let targetUsername = "";
+    let targetEmail = "";
+    if (Array.isArray(queryOr)) {
+        for (const item of queryOr) {
+            if (item && item.username) targetUsername = item.username;
+            if (item && item.email) targetEmail = item.email;
+        }
+    }
+    return { targetUsername, targetEmail };
+}
 
 function normalizeUser(user) {
     if (!user) return null;
     return {
         ...user,
         _id: user.id,
-        role: user.role || (user.username === "admin" || user.email === "admin@interviewai.com" ? "admin" : "user")
+        role: user.role || (user.username === "admin" || (user.email && user.email.startsWith("admin@")) ? "admin" : "user")
     };
 }
 
@@ -76,8 +111,13 @@ module.exports = {
             let request = client.from("users").select("*").limit(1);
 
             if (query.$or) {
-                const [{ username }, { email }] = query.$or;
-                request = request.or(`username.ilike.${username || ""},email.ilike.${email || ""}`);
+                const { targetUsername, targetEmail } = extractOrConditions(query.$or);
+                const orParts = [];
+                if (targetUsername) orParts.push(`username.ilike.${targetUsername}`);
+                if (targetEmail) orParts.push(`email.ilike.${targetEmail}`);
+                if (orParts.length > 0) {
+                    request = request.or(orParts.join(","));
+                }
             } else if (query.email) {
                 request = request.ilike("email", query.email);
             } else if (query.username) {
@@ -87,7 +127,6 @@ module.exports = {
             const { data, error } = await request.maybeSingle();
             if (error) {
                 if (isTableMissingError(error)) {
-                    // Fall back to local persistent store
                     return this.fallbackFindOne(query);
                 }
                 throw error;
@@ -97,7 +136,6 @@ module.exports = {
                 return normalizeUser(data);
             }
 
-            // If Supabase table exists but has no admin yet and query is for admin:
             if (query.username === "admin" || query.email === "admin@interviewai.com") {
                 return this.fallbackFindOne(query);
             }
@@ -116,11 +154,14 @@ module.exports = {
         let match = null;
 
         if (query.$or) {
-            const [{ username }, { email }] = query.$or;
-            match = fallbackUsers.find((u) =>
-                (username && u.username && u.username.toLowerCase() === username.toLowerCase()) ||
-                (email && u.email && u.email.toLowerCase() === email.toLowerCase())
-            );
+            const { targetUsername, targetEmail } = extractOrConditions(query.$or);
+            match = fallbackUsers.find((u) => {
+                const uName = (u.username || "").toLowerCase();
+                const uEmail = (u.email || "").toLowerCase();
+                const matchU = targetUsername && uName === targetUsername.toLowerCase();
+                const matchE = targetEmail && uEmail === targetEmail.toLowerCase();
+                return matchU || matchE;
+            });
         } else if (query.email) {
             match = fallbackUsers.find((u) => u.email && u.email.toLowerCase() === query.email.toLowerCase());
         } else if (query.username) {
@@ -167,6 +208,19 @@ module.exports = {
         );
 
         if (existing) {
+            // If existing is the placeholder DEFAULT_ADMIN, allow user to claim it
+            if (
+                existing.username.toLowerCase() === "admin" &&
+                existing.email.toLowerCase() === "admin@interviewai.com"
+            ) {
+                existing.username = user.username || "admin";
+                existing.email = user.email;
+                existing.password = user.password;
+                existing.role = "admin";
+                saveFallbackUsers(fallbackUsers);
+                return normalizeUser(existing);
+            }
+
             const isEmail = existing.email.toLowerCase() === (user.email || "").toLowerCase();
             throw new Error(isEmail ? "An account with this email already exists." : "This username is already taken.");
         }
